@@ -92,8 +92,11 @@ export type RepoKind = 'git' | 'folder'
  * - `'upstream'`: explicit upstream. Wins over heuristic and future topology
  *   changes. Falls back to origin if `upstream` remote vanishes, with a toast.
  * - `'origin'`: explicit origin. Same precedence.
+ * - `'mixed'`: list work items from origin AND upstream merged. Single-target
+ *   operations (issue creation) resolve like `'auto'` — a new issue cannot be
+ *   filed "in both".
  */
-export type IssueSourcePreference = 'upstream' | 'origin' | 'auto'
+export type IssueSourcePreference = 'upstream' | 'origin' | 'auto' | 'mixed'
 export type { ForkSyncMode, GitForkSyncExpectedUpstream, GitForkSyncResult } from './git-fork-sync'
 export type ExternalWorktreeVisibility = 'hide' | 'show'
 
