@@ -352,15 +352,24 @@ export function FloatingTerminalPanel({
     () => groupTabs.filter((tab) => tab.contentType === 'simulator'),
     [groupTabs]
   )
+  const tasksItems = useMemo(
+    () => groupTabs.filter((tab) => tab.contentType === 'tasks'),
+    [groupTabs]
+  )
   // Why: restored sessions can retain unified tabs whose backing records are
   // gone; the empty landing should follow what the user can see.
   const hasVisibleFloatingTabs =
     terminalItems.length > 0 ||
     browserItems.length > 0 ||
     editorItems.length > 0 ||
-    simulatorItems.length > 0
+    simulatorItems.length > 0 ||
+    tasksItems.length > 0
   const visibleFloatingItemCount =
-    terminalItems.length + browserItems.length + editorItems.length + simulatorItems.length
+    terminalItems.length +
+    browserItems.length +
+    editorItems.length +
+    simulatorItems.length +
+    tasksItems.length
   const activeClosableTab = hasVisibleFloatingTabs ? activeTab : null
   const tabBarOrder = useMemo(
     () =>
@@ -388,9 +397,12 @@ export function FloatingTerminalPanel({
         if (tab.contentType === 'simulator') {
           return simulatorItems.some((item) => item.id === tab.id)
         }
+        if (tab.contentType === 'tasks') {
+          return tasksItems.some((item) => item.id === tab.id)
+        }
         return editorItems.some((item) => item.tabId === tab.id)
       }),
-    [browserItems, editorItems, groupTabs, simulatorItems, tabBarOrder, terminalItems]
+    [browserItems, editorItems, groupTabs, simulatorItems, tabBarOrder, tasksItems, terminalItems]
   )
   const activeBrowserTab = activeBrowserId
     ? (browserTabs.find((tab) => tab.id === activeBrowserId) ?? null)
@@ -405,7 +417,9 @@ export function FloatingTerminalPanel({
         ? 'terminal'
         : activeTab?.contentType === 'simulator'
           ? 'simulator'
-          : 'editor'
+          : activeTab?.contentType === 'tasks'
+            ? 'tasks'
+            : 'editor'
 
   useContextualTour('floating-workspace', open, 'floating_workspace_visible', {
     recordFeatureInteraction: tourInteractionSnapshot?.recordFeatureInteractionForTour ?? false,
@@ -770,7 +784,7 @@ export function FloatingTerminalPanel({
         } else if (item.contentType === 'browser') {
           destroyWorkspaceWebviews(state.browserPagesByWorkspace, item.entityId)
           closeBrowserTab(item.entityId)
-        } else if (item.contentType === 'simulator') {
+        } else if (item.contentType === 'simulator' || item.contentType === 'tasks') {
           closeUnifiedTab(item.id)
         } else {
           const file = state.openFiles.find((candidate) => candidate.id === item.entityId)
@@ -1480,6 +1494,7 @@ export function FloatingTerminalPanel({
               activeFileId={activeEditorUnifiedId}
               activeBrowserTabId={activeBrowserId}
               activeSimulatorTabId={activeTab?.contentType === 'simulator' ? activeTab.id : null}
+              activeTasksTabId={activeTab?.contentType === 'tasks' ? activeTab.id : null}
               activeTabType={activeTabType}
               onActivateFile={activateFloatingItem}
               onCloseFile={closeFloatingItem}
