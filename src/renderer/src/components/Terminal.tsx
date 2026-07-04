@@ -40,6 +40,7 @@ import { hasFeatureInteraction } from '../../../shared/feature-interactions'
 import BrowserPane from './browser-pane/BrowserPane'
 import BrowserPaneOverlayLayer from './browser-pane/BrowserPaneOverlayLayer'
 import EmulatorPaneOverlayLayer from './emulator-pane/EmulatorPaneOverlayLayer'
+import TasksPaneOverlayLayer from './tasks-pane/TasksPaneOverlayLayer'
 import { useBrowserAutomationVisibilityForAny } from './browser-pane/browser-automation-visibility'
 import { useBrowserMobileDriverForAny } from '@/lib/pane-manager/browser-mobile-driver-state'
 import TerminalPaneOverlayLayer from './terminal-pane/TerminalPaneOverlayLayer'
@@ -2138,6 +2139,7 @@ const WorktreeSplitSurface = React.memo(function WorktreeSplitSurface({
       />
       <BrowserPaneOverlayLayer worktreeId={worktreeId} isWorktreeActive={isVisible} />
       <EmulatorPaneOverlayLayer worktreeId={worktreeId} isWorktreeActive={isVisible} />
+      <TasksPaneOverlayLayer worktreeId={worktreeId} isWorktreeActive={isVisible} />
       <AiVaultSessionDropLayer worktreeId={worktreeId} enabled={isVisible} />
     </div>
   )

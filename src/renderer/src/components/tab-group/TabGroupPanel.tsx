@@ -341,7 +341,8 @@ export default function TabGroupPanel({
         {activeTab &&
           activeTab.contentType !== 'terminal' &&
           activeTab.contentType !== 'browser' &&
-          activeTab.contentType !== 'simulator' && (
+          activeTab.contentType !== 'simulator' &&
+          activeTab.contentType !== 'tasks' && (
             <div className="absolute inset-0 flex min-h-0 min-w-0">
               {/* Why: split groups render editor content inside a plain relative pane body
                   instead of the legacy flex column in Terminal.tsx. */}
