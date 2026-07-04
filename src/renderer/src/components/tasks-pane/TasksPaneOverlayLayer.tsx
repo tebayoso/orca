@@ -50,7 +50,7 @@ const TasksOverlaySlot = memo(function TasksOverlaySlot({
         }
       }}
     >
-      <TasksPane tab={tab} worktreeId={tab.worktreeId} isActive={isActive} />
+      <TasksPane worktreeId={tab.worktreeId} isActive={isActive} />
     </div>
   )
 })

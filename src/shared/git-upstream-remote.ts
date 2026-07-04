@@ -1,13 +1,12 @@
 import {
+  DEFAULT_ORIGIN_REMOTE,
+  DEFAULT_UPSTREAM_REMOTE,
   remoteExists,
   remoteMatchesExpectedUpstream,
   validateGitForkSyncExpectedUpstream,
   type GitForkSyncExpectedUpstream,
   type GitForkSyncRunner
 } from './git-fork-sync'
-
-const DEFAULT_ORIGIN_REMOTE = 'origin'
-const DEFAULT_UPSTREAM_REMOTE = 'upstream'
 
 export type GitAddUpstreamRemoteResult =
   | { ok: true; url: string; alreadyExisted: boolean }

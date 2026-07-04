@@ -27,8 +27,8 @@ export type GitForkSyncExpectedUpstream = {
 
 export type GitForkSyncRunner = (args: string[]) => Promise<{ stdout: string; stderr?: string }>
 
-const DEFAULT_ORIGIN_REMOTE = 'origin'
-const DEFAULT_UPSTREAM_REMOTE = 'upstream'
+export const DEFAULT_ORIGIN_REMOTE = 'origin'
+export const DEFAULT_UPSTREAM_REMOTE = 'upstream'
 const DEFAULT_BRANCH_FALLBACKS = ['main', 'master']
 const GITHUB_HOSTS = new Set(['github.com', 'ssh.github.com'])
 

@@ -3,13 +3,11 @@ import { useAppStore } from '@/store'
 import { translate } from '@/i18n/i18n'
 import { isGitRepoKind } from '../../../../shared/repo-kind'
 import { getRepoIdFromWorktreeId } from '../../../../shared/worktree-id'
-import type { Tab } from '../../../../shared/types'
 import type { TaskPageEmbedContext } from '@/components/task-page-embed-surface'
 
 const TaskPage = lazy(() => import('@/components/TaskPage'))
 
 type TasksPaneProps = {
-  tab: Tab
   worktreeId: string
   isActive: boolean
 }
