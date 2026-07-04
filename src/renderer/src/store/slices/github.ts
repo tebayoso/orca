@@ -4246,24 +4246,24 @@ export const createGitHubSlice: StateCreator<AppState, [], [], GitHubSlice> = (s
     // first makes the "new fetch gets a fresh request" invariant impossible
     // to trip on later refactors that change zustand or React flush timing.
     clearInflightWorkItemsForRepo(repoId, repoPath)
-    // Why: evict every cache entry keyed on this repo AFTER the IPC
-    // resolves. If we evicted before awaiting, an overlapping fetch triggered
-    // by a different subscriber would hit main with the pre-flip persisted
-    // preference and repopulate the cache with stale-source data. Work-items
-    // cache keys are repo-scoped, but we also drop legacy path-scoped entries
-    // that may have been restored from older persisted cache data.
+    // Why: invalidate AFTER the IPC resolves — invalidating before awaiting
+    // would let an overlapping fetch hit main with the pre-flip persisted
+    // preference and repopulate stale-source data. Entries are marked stale
+    // (fetchedAt: 0) rather than deleted: the nonce-triggered refetch runs
+    // with force anyway, and keeping `data` renderable gives the list
+    // stale-while-revalidate — deleting caused a visible empty/skeleton
+    // flash on every source flip. isFresh() fails for any non-forced reader,
+    // so the old source can never be served as current.
     set((s) => {
       const prefixes = repoCacheKeyPrefixes(repoId, repoPath)
       const next: Record<string, CacheEntry<GitHubWorkItem[]>> = {}
       for (const [key, entry] of Object.entries(s.workItemsCache)) {
-        if (!matchesRepoCacheKey(key, prefixes)) {
-          next[key] = entry
-        }
+        next[key] = matchesRepoCacheKey(key, prefixes) ? { ...entry, fetchedAt: 0 } : entry
       }
       // Why: bump the invalidation nonce so the Tasks list's fetch effect
       // — which keys on `[selectedRepos, appliedTaskSearch, taskRefreshNonce,
       // taskSource, workItemsInvalidationNonce]` — re-runs and re-populates
-      // the just-evicted entries. Evicting alone wouldn't trigger the effect
+      // the just-staled entries. Staling alone wouldn't trigger the effect
       // because it doesn't depend on the cache.
       return { workItemsCache: next, workItemsInvalidationNonce: s.workItemsInvalidationNonce + 1 }
     })
