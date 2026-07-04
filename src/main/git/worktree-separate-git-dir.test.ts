@@ -87,7 +87,11 @@ async function createBareRepo(): Promise<string> {
 
 afterEach(async () => {
   revParseTopLevelCalls.count = 0
-  await Promise.all(tempRoots.splice(0).map((root) => rm(root, { recursive: true, force: true })))
+  await Promise.all(
+    tempRoots
+      .splice(0)
+      .map((root) => rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 }))
+  )
 })
 
 describe('git worktree separate git dir paths', () => {

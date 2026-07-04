@@ -78,9 +78,10 @@ export function useTabGroupWorkspaceModel({
       generatedTabTitlesEnabled: state.settings?.tabAutoGenerateTitle === true,
       mobileEmulatorEnabled: state.settings?.mobileEmulatorEnabled !== false,
       supportsTasksTab: (() => {
+        // Optional call: partial store mocks in tests omit lookup actions.
         const repoId =
-          state.getKnownWorktreeById(worktreeId)?.repoId ?? getRepoIdFromWorktreeId(worktreeId)
-        const repo = state.repos.find((candidate) => candidate.id === repoId)
+          state.getKnownWorktreeById?.(worktreeId)?.repoId ?? getRepoIdFromWorktreeId(worktreeId)
+        const repo = (state.repos ?? []).find((candidate) => candidate.id === repoId)
         return Boolean(repo && isGitRepoKind(repo))
       })()
     }))

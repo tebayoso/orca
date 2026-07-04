@@ -151,6 +151,10 @@ export function buildRelayCommandEnv(
 
   return {
     ...baseEnv,
-    [key]: [...segments].join(delimiter)
+    [key]: [...segments].join(delimiter),
+    // Why: relay consumers string-match subprocess output (git divergence
+    // hints, "nothing to commit", preflight banners). Localized messages
+    // (e.g. Spanish git) break that matching, so pin messages to C.
+    LC_ALL: 'C'
   }
 }

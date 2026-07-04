@@ -63,7 +63,7 @@ describe('GitHandler', () => {
   })
 
   afterEach(async () => {
-    await fs.rm(tmpDir, { recursive: true, force: true })
+    await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
   })
 
   function currentBranch(cwd: string): string {
@@ -658,7 +658,11 @@ describe('GitHandler', () => {
 
     afterEach(async () => {
       await Promise.all(
-        extraDirs.splice(0).map((dir) => fs.rm(dir, { recursive: true, force: true }))
+        extraDirs
+          .splice(0)
+          .map((dir) =>
+            fs.rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
+          )
       )
     })
 
@@ -953,7 +957,7 @@ describe('GitHandler', () => {
         ).rejects.toThrow('outside the worktree')
         await expect(fs.access(outsideFile)).resolves.toBeUndefined()
       } finally {
-        await fs.rm(outsideDir, { recursive: true, force: true })
+        await fs.rm(outsideDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
       }
     })
 
@@ -981,7 +985,7 @@ describe('GitHandler', () => {
         await expect(fs.access(outsideFile)).resolves.toBeUndefined()
         await expect(fs.access(untrackedFile)).resolves.toBeUndefined()
       } finally {
-        await fs.rm(outsideDir, { recursive: true, force: true })
+        await fs.rm(outsideDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
       }
     })
   })
@@ -1560,7 +1564,7 @@ describe('GitHandler', () => {
         expect(result.ahead).toBe(0)
         expect(result.behind).toBe(2)
       } finally {
-        await fs.rm(bareDir, { recursive: true, force: true })
+        await fs.rm(bareDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
       }
     })
 
@@ -1620,7 +1624,7 @@ describe('GitHandler', () => {
         // remote was actually contacted (not just silently no-op'd).
         await expect(fs.access(path.join(tmpDir, '.git', 'FETCH_HEAD'))).resolves.toBeUndefined()
       } finally {
-        await fs.rm(bareDir, { recursive: true, force: true })
+        await fs.rm(bareDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
       }
     })
 
@@ -1650,7 +1654,7 @@ describe('GitHandler', () => {
 
         await expect(fs.access(path.join(tmpDir, '.git', 'FETCH_HEAD'))).resolves.toBeUndefined()
       } finally {
-        await fs.rm(bareDir, { recursive: true, force: true })
+        await fs.rm(bareDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
       }
     })
 
@@ -1697,8 +1701,13 @@ describe('GitHandler', () => {
 
         await expect(fs.readFile(path.join(tmpDir, 'remote.txt'), 'utf-8')).resolves.toBe('remote')
       } finally {
-        await fs.rm(bareDir, { recursive: true, force: true })
-        await fs.rm(producerParent, { recursive: true, force: true })
+        await fs.rm(bareDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
+        await fs.rm(producerParent, {
+          recursive: true,
+          force: true,
+          maxRetries: 10,
+          retryDelay: 50
+        })
       }
     })
 
@@ -1786,8 +1795,13 @@ describe('GitHandler', () => {
         }).trim()
         expect(actual).toBe(expected)
       } finally {
-        await fs.rm(bareDir, { recursive: true, force: true })
-        await fs.rm(producerParent, { recursive: true, force: true })
+        await fs.rm(bareDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
+        await fs.rm(producerParent, {
+          recursive: true,
+          force: true,
+          maxRetries: 10,
+          retryDelay: 50
+        })
       }
     })
 
@@ -1834,7 +1848,7 @@ describe('GitHandler', () => {
         }).trim()
         expect(actual).toBe(expected)
       } finally {
-        await fs.rm(bareDir, { recursive: true, force: true })
+        await fs.rm(bareDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
       }
     })
 
@@ -2001,7 +2015,12 @@ describe('GitHandler', () => {
 
           expect(result.map((worktree) => worktree.path)).toContain(realWorktreePath)
         } finally {
-          await fs.rm(worktreePath, { recursive: true, force: true })
+          await fs.rm(worktreePath, {
+            recursive: true,
+            force: true,
+            maxRetries: 10,
+            retryDelay: 50
+          })
         }
       }
     )

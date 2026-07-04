@@ -36,7 +36,11 @@ async function createDirectoryLink(target: string, linkPath: string): Promise<vo
 }
 
 afterEach(async () => {
-  await Promise.all(tempRoots.splice(0).map((root) => rm(root, { recursive: true, force: true })))
+  await Promise.all(
+    tempRoots
+      .splice(0)
+      .map((root) => rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 }))
+  )
 })
 
 describe('discardChanges symlink safety', () => {
