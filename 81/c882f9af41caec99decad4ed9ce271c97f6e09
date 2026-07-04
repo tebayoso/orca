@@ -1,0 +1,45 @@
+src/main/gitlab/gitlab-project-ref-resolution.ts
+  s_eeceb437e86f12::t_c688c59eeac313 207-208
+src/renderer/src/components/TaskPage.tsx
+  s_eeceb437e86f12::t_9e7a2659afdc92 3907-3918
+src/main/github/client-mixed-issue-source.test.ts
+  s_eeceb437e86f12::t_e8c3c0f0ebf93f 91
+  s_eeceb437e86f12::t_2f1fe4d8f9ef27 1-90,92-139
+src/renderer/src/i18n/locales/ko.json
+  s_eeceb437e86f12::t_3bf36d3d24c942 2011-2013
+src/renderer/src/i18n/locales/zh.json
+  s_eeceb437e86f12::t_3bf36d3d24c942 2011-2013
+src/renderer/src/i18n/locales/es.json
+  s_eeceb437e86f12::t_3bf36d3d24c942 2011-2013
+src/renderer/src/components/github/IssueSourceSelector.tsx
+  s_eeceb437e86f12::t_b828ffb0ac32f1 203-218
+  s_eeceb437e86f12::t_5cce8d4784a61d 100-103,114-115
+  s_eeceb437e86f12::t_48e5a0cd369a2c 168-186
+  s_eeceb437e86f12::t_f9ec08f3918ceb 65
+  s_eeceb437e86f12::t_ea3996fe4f368e 22,24
+src/main/github/client.ts
+  s_eeceb437e86f12::t_377cce16b9d208 1339-1421
+  s_eeceb437e86f12::t_1fe21d9c5cd379 1278-1288
+src/renderer/src/i18n/locales/ja.json
+  s_eeceb437e86f12::t_3bf36d3d24c942 2011-2013
+src/renderer/src/i18n/locales/en.json
+  s_eeceb437e86f12::t_3bf36d3d24c942 2011-2013
+src/shared/types.ts
+  s_eeceb437e86f12::t_8b4f854ef27710 1465-1471
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "81c882f9af41caec99decad4ed9ce271c97f6e09",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
