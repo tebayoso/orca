@@ -1,0 +1,55 @@
+src/main/ipc/github.ts
+  s_eeceb437e86f12::t_ed94322d698ea9 74,440-444,447-450,452
+  s_eeceb437e86f12::t_384d08589c8179 445-446,451
+  s_eeceb437e86f12::t_ed8cf78a3e0abc 453-456
+src/preload/api-types.ts
+  s_eeceb437e86f12::t_d798decb46e1c3 66
+  s_eeceb437e86f12::t_384d08589c8179 1338-1343
+src/shared/types.ts
+  s_eeceb437e86f12::t_95446706e2384f 1898-1902
+src/preload/index.ts
+  s_eeceb437e86f12::t_384d08589c8179 1129-1136
+  s_eeceb437e86f12::t_9be6368bf10d5a 54,56
+  s_eeceb437e86f12::t_ffdf85dd119b18 55
+src/main/runtime/orca-runtime.ts
+  s_eeceb437e86f12::t_c04cfa3c0cc8ab 366,11589-11601
+  s_eeceb437e86f12::t_c57f5b63519933 11602-11604
+src/renderer/src/hooks/useIssueMetadata.ts
+  s_eeceb437e86f12::t_8de0fc3694951f 14,42,89-180
+  s_eeceb437e86f12::t_fce3f05a5ee323 43-88
+src/renderer/src/components/PullRequestPage.tsx
+  s_eeceb437e86f12::t_86bc7ed0b3eb0e 148-154,6112-6160,6163-6168,6170-6183,6185-6203,6205-6211,6213-6230,6233-6238,6240-6253,6255-6273,6275-6281,6283-6307
+  s_eeceb437e86f12::t_9c53d982565122 5865-5880
+  s_eeceb437e86f12::t_2ed23ea932c035 5881
+src/main/github/viewer-repo-permission.ts
+  s_eeceb437e86f12::t_95446706e2384f 1-62
+src/main/github/viewer-repo-permission.test.ts
+  s_eeceb437e86f12::t_254b6564b366d4 1-87
+  s_eeceb437e86f12::t_e58fef368ad485 88-93
+src/main/runtime/rpc/methods/github.ts
+  s_eeceb437e86f12::t_c04cfa3c0cc8ab 164-168,503-510
+  s_eeceb437e86f12::t_0d9b2f3dd4871d 511
+src/renderer/src/web/web-preload-api.ts
+  s_eeceb437e86f12::t_7af97db2f7dc30 226,276,379,1854-1855
+  s_eeceb437e86f12::t_b8507ebcdafe5c 1856-1858
+src/renderer/src/web/web-preload-api.test.ts
+  s_eeceb437e86f12::t_7af97db2f7dc30 1989
+  s_eeceb437e86f12::t_30affea276888c 2125-2128
+  s_eeceb437e86f12::t_148cbfafaefd20 2123-2124
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "9926315a39ac27c3cd47887fa53977ce07b13b8e",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
