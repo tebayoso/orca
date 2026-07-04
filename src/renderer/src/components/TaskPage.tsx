@@ -278,7 +278,9 @@ import {
   useRepoLabels,
   useTeamStates,
   useTeamMembers,
-  useTeamLabels
+  useTeamLabels,
+  useRepoViewerPermission,
+  useGitHubViewerLogin
 } from '@/hooks/useIssueMetadata'
 import {
   linearCreateProject,
@@ -1078,6 +1080,24 @@ function GHStatusCell({
   )
   const reqRef = useRef(0)
   const parsedIssueLink = useMemo(() => parseGitHubIssueOrPRLink(item.url), [item.url])
+  // Why: read-tier repos (typical for the upstream of a fork) reject state
+  // writes with 403s — fall back to the static badge instead of offering a
+  // doomed popover. The item's URL slug identifies the exact repo the write
+  // would hit (slug-routed updates win over repo-path routing below). Issue
+  // authors keep close/reopen on their own issues; unknown permission fails
+  // open.
+  const viewerPermission = useRepoViewerPermission(
+    repo?.path ?? null,
+    repo?.id ?? null,
+    parsedIssueLink?.slug
+      ? { owner: parsedIssueLink.slug.owner, repo: parsedIssueLink.slug.repo }
+      : null,
+    sourceSettings
+  )
+  const viewerLogin = useGitHubViewerLogin(sourceSettings)
+  const canMutateStatus =
+    viewerPermission.data !== 'read' ||
+    (viewerLogin !== null && item.author !== null && item.author === viewerLogin)
   const filteredDuplicateCandidates = useMemo(
     () =>
       getTaskPageGitHubDuplicateCandidates(duplicateIssueCandidates, item.number, duplicateSearch),
@@ -1267,7 +1287,7 @@ function GHStatusCell({
     }
   }, [])
 
-  if (item.type !== 'issue' || (!repo && !parsedIssueLink?.slug)) {
+  if (item.type !== 'issue' || (!repo && !parsedIssueLink?.slug) || !canMutateStatus) {
     return <TaskPageGitHubWorkItemStateBadge item={item} />
   }
 
@@ -1760,6 +1780,16 @@ function GHAssigneesCell({
     seedLogins,
     sourceSettings
   )
+  // Why: read-tier repos reject assignee writes with 403s — render the plain
+  // avatar stack instead of the popover trigger. The URL slug identifies the
+  // exact repo the slug-routed write targets; unknown permission fails open.
+  const viewerPermission = useRepoViewerPermission(
+    repo?.path ?? null,
+    repo?.id ?? null,
+    owner && repoName ? { owner, repo: repoName } : null,
+    sourceSettings
+  )
+  const canEditAssignees = viewerPermission.data !== 'read'
 
   const toggleAssignee = useCallback(
     async (user: GitHubAssignableUser): Promise<void> => {
@@ -1866,6 +1896,12 @@ function GHAssigneesCell({
     ) : (
       <span className="text-xs text-muted-foreground/60">-</span>
     )
+
+  if (!canEditAssignees) {
+    return (
+      <span className="inline-flex h-6 max-w-full items-center gap-1 px-1.5">{triggerContent}</span>
+    )
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
