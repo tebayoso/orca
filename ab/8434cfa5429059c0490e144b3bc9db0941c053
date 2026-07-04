@@ -1,0 +1,19 @@
+src/renderer/src/store/slices/github.ts
+  s_eeceb437e86f12::t_599053821754a6 4249-4256,4261,4266
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "ab8434cfa5429059c0490e144b3bc9db0941c053",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
