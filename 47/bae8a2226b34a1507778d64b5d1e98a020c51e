@@ -1,0 +1,23 @@
+src/shared/git-upstream-remote.ts
+  s_eeceb437e86f12::t_f3e253bf20a8af 2-3
+src/renderer/src/components/tasks-pane/TasksPaneOverlayLayer.tsx
+  s_eeceb437e86f12::t_f3e253bf20a8af 53
+src/shared/git-fork-sync.ts
+  s_eeceb437e86f12::t_f3e253bf20a8af 30-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "47bae8a2226b34a1507778d64b5d1e98a020c51e",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
