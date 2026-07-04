@@ -38,11 +38,11 @@ export default function TasksPane({ worktreeId, isActive }: TasksPaneProps): Rea
     return (
       <div className="flex h-full min-h-0 flex-col items-center justify-center gap-1 bg-background px-6 text-center">
         <p className="text-sm font-medium text-foreground">
-          {translate('auto.components.tasks.pane.TasksPane.b3fca31a02', 'Tasks unavailable')}
+          {translate('auto.components.tasks.pane.TasksPane.a81bfba116', 'Tasks unavailable')}
         </p>
         <p className="text-xs text-muted-foreground">
           {translate(
-            'auto.components.tasks.pane.TasksPane.5f2c4f7d18',
+            'auto.components.tasks.pane.TasksPane.36a1cd05e1',
             'This workspace is not backed by a git repository, so there is no task source to show.'
           )}
         </p>
