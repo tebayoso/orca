@@ -1,0 +1,19 @@
+src/renderer/src/components/github/IssueSourceSelector.tsx
+  s_eeceb437e86f12::t_78740758695506 40-43,103,105,110,150,155,228-241
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "d2540b987f535c904d978f1d48be012356632129",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
