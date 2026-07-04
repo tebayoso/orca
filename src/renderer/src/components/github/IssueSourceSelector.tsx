@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { LoaderCircle } from 'lucide-react'
 import type { GitHubOwnerRepo, IssueSourcePreference } from '../../../../shared/types'
 import { sameGitHubOwnerRepo } from '@/components/github/IssueSourceIndicator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -34,6 +35,10 @@ export type IssueSourceSelectorProps = {
    *  is filed in exactly one repo, and 'mixed' resolves to the auto heuristic
    *  there, which would make the pill a silent alias for Upstream. */
   showMixed?: boolean
+  /** True while a source flip's refetch is in flight. Pills disable
+   *  immediately; the trailing spinner appears after ~200ms so fast local
+   *  flips show nothing (STYLEGUIDE UX rule 1, SSH corollary). */
+  busy?: boolean
   /** Suppresses the "Issues from <slug>" hover tooltip. Passed by callers on
    *  surfaces that only act on issues (e.g. the Create Issue composer) where
    *  the caveat is implicit — on mixed surfaces like the Tasks header the
@@ -91,8 +96,20 @@ export default function IssueSourceSelector({
   className,
   density = 'labeled',
   suppressTooltip = false,
-  showMixed = false
+  showMixed = false,
+  busy = false
 }: IssueSourceSelectorProps): React.JSX.Element | null {
+  // Why: delay the visible spinner ~200ms — local flips often settle before
+  // that and anything visible would read as a glitch; SSH flips get feedback.
+  const [busyVisible, setBusyVisible] = useState(false)
+  useEffect(() => {
+    if (!busy) {
+      setBusyVisible(false)
+      return
+    }
+    const timer = setTimeout(() => setBusyVisible(true), 200)
+    return () => clearTimeout(timer)
+  }, [busy])
   if (!origin || !upstream) {
     return null
   }
@@ -124,10 +141,14 @@ export default function IssueSourceSelector({
   // when the persisted preference already matches the click.
   const persistedMatches = (target: 'upstream' | 'origin' | 'mixed'): boolean =>
     preference === target
+  // Why: bind disabled the moment a flip dispatches so double-clicks can't
+  // race two source swaps; the spinner is the delayed *visible* half.
+  const interactionDisabled = disabled || busy
 
   const group = (
     <div
       role="group"
+      aria-busy={busy}
       aria-label={translate(
         'auto.components.github.IssueSourceSelector.787c970baf',
         'Issue source'
@@ -143,14 +164,17 @@ export default function IssueSourceSelector({
       <button
         type="button"
         aria-pressed={effective === 'upstream'}
-        disabled={disabled}
+        disabled={interactionDisabled}
         onClick={() => {
-          if (disabled || persistedMatches('upstream')) {
+          if (interactionDisabled || persistedMatches('upstream')) {
             return
           }
           onChange('upstream')
         }}
-        className={segmentClass(effective === 'upstream' ? 'active' : 'inactive', disabled)}
+        className={segmentClass(
+          effective === 'upstream' ? 'active' : 'inactive',
+          interactionDisabled
+        )}
       >
         {density === 'compact'
           ? 'U'
@@ -159,15 +183,15 @@ export default function IssueSourceSelector({
       <button
         type="button"
         aria-pressed={effective === 'origin'}
-        disabled={disabled}
+        disabled={interactionDisabled}
         onClick={() => {
-          if (disabled || persistedMatches('origin')) {
+          if (interactionDisabled || persistedMatches('origin')) {
             return
           }
           onChange('origin')
         }}
         className={cn(
-          segmentClass(effective === 'origin' ? 'active' : 'inactive', disabled),
+          segmentClass(effective === 'origin' ? 'active' : 'inactive', interactionDisabled),
           // Why: 1px divider between segments, matching the outer chip border.
           'border-l border-border/40'
         )}
@@ -180,15 +204,15 @@ export default function IssueSourceSelector({
         <button
           type="button"
           aria-pressed={effective === 'mixed'}
-          disabled={disabled}
+          disabled={interactionDisabled}
           onClick={() => {
-            if (disabled || persistedMatches('mixed')) {
+            if (interactionDisabled || persistedMatches('mixed')) {
               return
             }
             onChange('mixed')
           }}
           className={cn(
-            segmentClass(effective === 'mixed' ? 'active' : 'inactive', disabled),
+            segmentClass(effective === 'mixed' ? 'active' : 'inactive', interactionDisabled),
             'border-l border-border/40'
           )}
         >
@@ -197,6 +221,14 @@ export default function IssueSourceSelector({
             : translate('auto.components.github.IssueSourceSelector.9d1ff63799', 'Mixed')}
         </button>
       ) : null}
+      {/* Why: permanently reserved footprint — the chip must not resize
+          mid-action when the spinner becomes visible (UX rule 1). */}
+      <span className="inline-flex w-4 items-center justify-center self-stretch border-l border-border/40">
+        <LoaderCircle
+          aria-hidden="true"
+          className={cn('size-3 text-muted-foreground', busyVisible ? 'animate-spin' : 'invisible')}
+        />
+      </span>
     </div>
   )
 

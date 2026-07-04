@@ -4089,6 +4089,24 @@ export default function TaskPage({
     setTaskRefreshNonce((current) => current + 1)
   }, [])
   const [addingUpstreamRepoIds, setAddingUpstreamRepoIds] = useState<ReadonlySet<string>>(new Set())
+  // Why: feeds the selector's busy spinner. The flip's nonce bump forces the
+  // shared fetch effect, so "refetch settled" is exactly tasksRefreshing (or
+  // the initial tasksLoading) returning to false.
+  const [switchingSourceRepoIds, setSwitchingSourceRepoIds] = useState<ReadonlySet<string>>(
+    new Set()
+  )
+  useEffect(() => {
+    if (!tasksRefreshing && !tasksLoading) {
+      setSwitchingSourceRepoIds((prev) => (prev.size === 0 ? prev : new Set()))
+    }
+  }, [tasksLoading, tasksRefreshing])
+  const handleSwitchIssueSource = useCallback(
+    (repo: Repo, next: 'upstream' | 'origin' | 'mixed') => {
+      setSwitchingSourceRepoIds((prev) => new Set(prev).add(repo.id))
+      void setIssueSourcePreference(repo.id, repo.path, next)
+    },
+    [setIssueSourcePreference]
+  )
   const handleAddUpstreamRemote = useCallback(
     async (repo: Repo): Promise<void> => {
       if (!repo.upstream || addingUpstreamRepoIds.has(repo.id)) {
@@ -8606,8 +8624,9 @@ export default function TaskPage({
                                   origin={s.sources.originCandidate}
                                   upstream={s.sources.upstreamCandidate}
                                   showMixed
+                                  busy={switchingSourceRepoIds.has(repo.id)}
                                   onChange={(next) => {
-                                    void setIssueSourcePreference(repo.id, repo.path, next)
+                                    handleSwitchIssueSource(repo, next)
                                   }}
                                 />
                               </div>
