@@ -1,0 +1,25 @@
+src/shared/types.ts
+  s_eeceb437e86f12::t_d5c6cc1b425947 770,772
+src/renderer/src/store/slices/tabs-hydration.test.ts
+  s_eeceb437e86f12::t_24d8ea52189d91 137-169
+src/shared/workspace-session-schema.ts
+  s_eeceb437e86f12::t_6e66aa06af0c7f 101-102,105-111
+src/shared/workspace-session-schema.test.ts
+  s_eeceb437e86f12::t_9e32a64ac084d3 428-457
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e74ad8c200c4bf053e1fc611aa6108c49865298d",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
