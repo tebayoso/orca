@@ -1,0 +1,27 @@
+src/renderer/src/components/GitHubItemDialog.tsx
+  s_eeceb437e86f12::t_24d808bcfb24cc 3882-3895,3898-3899,3901,4195-4219
+  s_eeceb437e86f12::t_7d98270ab311d5 3173-3185,3187-3188,3190
+  s_eeceb437e86f12::t_604ffc7d03ee7e 6501-6510,6512-6515,6517-6562,6577-6586,6588-6606,6608-6614,6616-6640
+  s_eeceb437e86f12::t_5f05c83174c592 6001-6021,6241
+  s_eeceb437e86f12::t_5acadf32aa9233 6490-6495,6497-6500,6563,6566-6571,6573-6576
+  s_eeceb437e86f12::t_0ec606816abce7 6301
+  s_eeceb437e86f12::t_496e1476cc6d98 550-559
+  s_eeceb437e86f12::t_c2f4079dc52add 155-161,6242-6262,6264-6267,6269-6275,6277-6300,6336-6357,6359-6371,6373-6395
+  s_eeceb437e86f12::t_38c51c03b15c03 5692-5706
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "2b13fa7c8f44259de7229fba48b2615b0d408e6d",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
