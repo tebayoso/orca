@@ -1,0 +1,84 @@
+src/renderer/src/store/slices/tabs.ts
+  s_eeceb437e86f12::t_c8c640093f7634 405-410
+  s_eeceb437e86f12::t_c2dcd40866d16a 1904
+src/renderer/src/components/tab-bar/reconcile-order.ts
+  s_eeceb437e86f12::t_58561a244bac30 35
+  s_eeceb437e86f12::t_77599e669aefef 11-12,14-20
+src/renderer/src/components/tab-bar/group-tab-order.ts
+  s_eeceb437e86f12::t_ba7d8c5d170573 6,16
+  s_eeceb437e86f12::t_0a73d76591a89c 170-171,181-182,188,199-200
+  s_eeceb437e86f12::t_791b757bdce732 57-58,70
+  s_eeceb437e86f12::t_e307933b4f54ee 149-153
+  s_eeceb437e86f12::t_af60430f762f4c 94-99
+src/renderer/src/components/tab-bar/TabBar.tsx
+  s_eeceb437e86f12::t_e90d0feadb527e 274
+  s_eeceb437e86f12::t_5b44a24c31ee8c 122
+  s_eeceb437e86f12::t_6ade8533b5911a 971-972,976-988,1000
+  s_eeceb437e86f12::t_5aaccb4716b1eb 137
+  s_eeceb437e86f12::t_813f6d6c3bc1f3 915-921,930-931
+  s_eeceb437e86f12::t_6c6e1e57a26451 796-822
+  s_eeceb437e86f12::t_ff7cca01a83965 259
+  s_eeceb437e86f12::t_f0f2214681b031 648-651
+  s_eeceb437e86f12::t_ace1def4b24322 863,873
+  s_eeceb437e86f12::t_37b22f26b12473 1035-1037,1049
+  s_eeceb437e86f12::t_1e41c0fd75901a 600-602,608,612-613
+  s_eeceb437e86f12::t_2d5a722085e6d5 467-470
+  s_eeceb437e86f12::t_e814a58a1e6644 14
+  s_eeceb437e86f12::t_d2445f3f2bf0ef 1287-1311
+  s_eeceb437e86f12::t_14e100a86f36c2 182-188,200-201
+  s_eeceb437e86f12::t_1bd85af9a27f3e 202
+  s_eeceb437e86f12::t_79322581cb8216 1284-1286
+  s_eeceb437e86f12::t_9d673133ebdfe7 1279-1283
+src/renderer/src/components/tasks-pane/TasksPane.tsx
+  s_eeceb437e86f12::t_074eb56d1c509d 41
+  s_eeceb437e86f12::t_c9f0ad8e028857 45
+src/renderer/src/components/tab-group/tab-drag-preview-activation.ts
+  s_eeceb437e86f12::t_6eb7b6166d86fc 60-65
+src/renderer/src/lib/ensure-tasks-tab.ts
+  s_eeceb437e86f12::t_6da2470485e471 1-66
+src/renderer/src/components/tab-group/useTabDragSplit.ts
+  s_eeceb437e86f12::t_f5e72c64b10d5f 58
+src/renderer/src/components/tab-bar/tab-create-menu-options.ts
+  s_eeceb437e86f12::t_3dbda517f1796a 31-32
+  s_eeceb437e86f12::t_96015b8bbee1a7 8,12
+  s_eeceb437e86f12::t_5f386b37d2152e 172-193
+src/renderer/src/components/tab-bar/TabBarCreateEntryRow.tsx
+  s_eeceb437e86f12::t_4afe480fe23e83 2
+  s_eeceb437e86f12::t_6fe9507179538c 90-91
+src/renderer/src/components/tab-bar/tab-create-menu-options.test.ts
+  s_eeceb437e86f12::t_6e0f357e4d89f6 41-43,51-80
+  s_eeceb437e86f12::t_b6d8012d9afa01 99-100
+  s_eeceb437e86f12::t_4290a9c0dc584c 21-23
+  s_eeceb437e86f12::t_4b2f3ea1403594 81
+src/renderer/src/store/slices/worktrees.ts
+  s_eeceb437e86f12::t_c8c640093f7634 281-286
+src/renderer/src/lib/file-type-icons.ts
+  s_eeceb437e86f12::t_e9e8572196ad74 322-326
+  s_eeceb437e86f12::t_e1bc82b9a2c923 24
+src/renderer/src/components/tab-group/useTabGroupWorkspaceModel.ts
+  s_eeceb437e86f12::t_01263fb3882ad4 293,358
+  s_eeceb437e86f12::t_9e59d3d94f2ce7 30-32
+  s_eeceb437e86f12::t_c5e8e18e8feb40 444-446
+  s_eeceb437e86f12::t_800f26f36d5c3f 631
+  s_eeceb437e86f12::t_9ad0ca88c67d58 632-635
+  s_eeceb437e86f12::t_55ebcfacedd1b7 79-85
+src/renderer/src/components/tab-group/TabGroupPanel.tsx
+  s_eeceb437e86f12::t_b27ee850afa94e 117
+  s_eeceb437e86f12::t_4c83dd7ee446ba 128-129,135,143-145
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5bb444995ad2397d019c8ba3591cdce5653526be",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
