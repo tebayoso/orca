@@ -2008,7 +2008,9 @@
           "643d7e9496": "上流",
           "51d1608920": "オリジン",
           "cdc9bd64fa": "コンパクト",
-          "30b2c9df91": "上流"
+          "30b2c9df91": "上流",
+          "9d1ff63799": "Mixed",
+          "b47b195370": "Showing issues from origin and upstream merged"
         },
         "PRFilterDropdowns": {
           "979be3cf6b": "担当者",

@@ -3904,6 +3904,18 @@ export default function TaskPage({
 
   const openGitHubDetailPage = useCallback(
     (item: GitHubWorkItem, initialTab: ItemDialogTab = 'conversation') => {
+      // Why: 'mixed' lists both fork remotes, but detail fetches and dialog
+      // mutations resolve against the type's primary source (issues →
+      // upstream, PRs → origin). Items listed from the non-primary remote
+      // must open in the browser — an in-app dialog would silently read and
+      // mutate the wrong repo's item with the same number.
+      const dialogWouldResolveWrongRepo =
+        (item.type === 'issue' && item.sourceRemote === 'origin') ||
+        (item.type === 'pr' && item.sourceRemote === 'upstream')
+      if (dialogWouldResolveWrongRepo && item.url) {
+        void window.api.shell.openUrl(item.url)
+        return
+      }
       openTaskPage(
         {
           taskSource: 'github',

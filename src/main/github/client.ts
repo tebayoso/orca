@@ -1275,6 +1275,17 @@ export async function listWorkItems(
       }
     }
   }
+  if (preference === 'mixed') {
+    return listMixedWorkItems(
+      repoPath,
+      limit,
+      query,
+      before,
+      connectionId,
+      noCache,
+      localGitOptions
+    )
+  }
   const [issueResolved, prResolved] = await Promise.all([
     resolveIssueSource(repoPath, preference, connectionId, localGitOptions),
     resolvePrWorkItemSource(repoPath, preference, connectionId, localGitOptions)
@@ -1322,6 +1333,89 @@ export async function listWorkItems(
     }
   } finally {
     release()
+  }
+}
+
+/**
+ * 'mixed' preference: list work items from BOTH origin and upstream merged.
+ *
+ * Items are stamped with their source remote and slug, and ids gain a slug
+ * suffix — origin #5 and upstream #5 are different items and must not
+ * collide on React keys or selection. Repos without a distinct upstream
+ * degrade to a single 'auto' pass (no stamping), so non-forks behave
+ * exactly as before even with the preference persisted.
+ */
+async function listMixedWorkItems(
+  repoPath: string,
+  limit: number,
+  query: string | undefined,
+  before: string | undefined,
+  connectionId: string | null | undefined,
+  noCache: boolean | undefined,
+  localGitOptions: LocalGitExecOptions
+): Promise<ListWorkItemsResult<MainWorkItem>> {
+  const probe = await resolvePrWorkItemSource(repoPath, 'auto', connectionId, localGitOptions)
+  const origin = probe.originCandidate
+  const upstream = probe.upstreamCandidate
+  if (!origin || !upstream || sameOwnerRepo(origin, upstream)) {
+    return listWorkItems(
+      repoPath,
+      limit,
+      query,
+      before,
+      'auto',
+      connectionId,
+      noCache,
+      localGitOptions
+    )
+  }
+
+  const stamp = (
+    result: ListWorkItemsResult<MainWorkItem>,
+    remote: 'origin' | 'upstream',
+    slug: OwnerRepo
+  ): MainWorkItem[] =>
+    result.items.map((item) => ({
+      ...item,
+      id: `${item.id}@${slug.owner}/${slug.repo}`,
+      sourceRemote: remote,
+      sourceOwnerRepo: slug
+    }))
+
+  const [originResult, upstreamResult] = await Promise.all([
+    listWorkItems(repoPath, limit, query, before, 'origin', connectionId, noCache, localGitOptions),
+    listWorkItems(
+      repoPath,
+      limit,
+      query,
+      before,
+      'upstream',
+      connectionId,
+      noCache,
+      localGitOptions
+    )
+  ])
+
+  const items = [
+    ...stamp(originResult, 'origin', origin),
+    ...stamp(upstreamResult, 'upstream', upstream)
+  ]
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .slice(0, limit)
+
+  const issuesError = originResult.errors?.issues ?? upstreamResult.errors?.issues
+  return {
+    items,
+    // Why: report the upstream pass's effective sources — under 'mixed' the
+    // primary (dialog/detail) source stays the auto heuristic, which resolves
+    // to upstream whenever one exists.
+    sources: {
+      issues: upstreamResult.sources.issues,
+      prs: upstreamResult.sources.prs,
+      originCandidate: origin,
+      upstreamCandidate: upstream
+    },
+    ...(issuesError ? { errors: { issues: issuesError } } : {})
   }
 }
 

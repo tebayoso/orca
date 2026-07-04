@@ -2008,7 +2008,9 @@
           "643d7e9496": "上游",
           "51d1608920": "起源",
           "cdc9bd64fa": "紧凑",
-          "30b2c9df91": "上游"
+          "30b2c9df91": "上游",
+          "9d1ff63799": "Mixed",
+          "b47b195370": "Showing issues from origin and upstream merged"
         },
         "PRFilterDropdowns": {
           "979be3cf6b": "负责人",

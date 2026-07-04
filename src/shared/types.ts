@@ -1462,6 +1462,13 @@ export type GitHubWorkItem = {
   // The Start-from picker passes this to resolvePrBase so fork heads use
   // refs/pull/<N>/head for creation and a separate PR-head push target.
   isCrossRepository?: boolean
+  /** Set only by the 'mixed' issue-source list merge: which remote of the
+   *  fork the item came from. Absent under single-source preferences. */
+  sourceRemote?: 'origin' | 'upstream'
+  /** The owner/repo slug the item was listed from, set alongside
+   *  `sourceRemote`. Lets rows and detail routing distinguish origin #5
+   *  from upstream #5 without re-parsing `url`. */
+  sourceOwnerRepo?: GitHubOwnerRepo
   /** Why: required because the cross-repo view merges items from every selected
    *  repo — the table row's repo pill and the "open in browser" fallback need
    *  to know which repo an item came from. Stamped by the renderer fetcher
