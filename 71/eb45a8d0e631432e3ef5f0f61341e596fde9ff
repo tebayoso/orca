@@ -1,0 +1,51 @@
+src/renderer/src/web/web-preload-api.ts
+  s_eeceb437e86f12::t_2d26b3c70e319a 225,274,376,1835-1839
+src/main/github/issues.ts
+  s_eeceb437e86f12::t_133745348bc04b 510-538
+src/main/runtime/rpc/methods/github.ts
+  s_eeceb437e86f12::t_988b6f09cbfafb 159-163,498-502
+  s_eeceb437e86f12::t_26c3114a3f0bda 503
+src/main/github/client.ts
+  s_eeceb437e86f12::t_133745348bc04b 80
+src/preload/api-types.ts
+  s_eeceb437e86f12::t_c16ae34280c3c4 1330-1335
+src/renderer/src/components/TaskPage.tsx
+  s_eeceb437e86f12::t_69365f82d47674 4079-4135
+  s_eeceb437e86f12::t_c00c44bf9dd314 9144-9169
+  s_eeceb437e86f12::t_eb7742d39f90cb 4136-4142,9170-9176
+src/main/runtime/orca-runtime.ts
+  s_eeceb437e86f12::t_37cd18ac78e5b7 356
+  s_eeceb437e86f12::t_c155d345c9d1e9 11572-11584
+src/main/ipc/github.ts
+  s_eeceb437e86f12::t_1953f4c1fdc825 35
+  s_eeceb437e86f12::t_ed67d284c3512f 440-451
+  s_eeceb437e86f12::t_8c2f220c29cb14 439
+src/preload/index.ts
+  s_eeceb437e86f12::t_3adf80ab7ca22d 1118-1125
+src/renderer/src/i18n/locales/en.json
+  s_eeceb437e86f12::t_8f80e358c6edca 1707-1710
+src/renderer/src/i18n/locales/es.json
+  s_eeceb437e86f12::t_e82f9b7216d24f 1707-1710
+src/renderer/src/i18n/locales/ja.json
+  s_eeceb437e86f12::t_ae75c700db8e96 1707-1710
+src/renderer/src/i18n/locales/ko.json
+  s_eeceb437e86f12::t_0d7cf6fec24a19 1707-1710
+src/renderer/src/i18n/locales/zh.json
+  s_eeceb437e86f12::t_829e85637f7908 1707-1710
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "71eb45a8d0e631432e3ef5f0f61341e596fde9ff",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
