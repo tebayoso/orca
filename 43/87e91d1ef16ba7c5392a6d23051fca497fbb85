@@ -1,0 +1,21 @@
+src/renderer/src/web/web-preload-api.test.ts
+  s_eeceb437e86f12::t_dde0e79125dbed 2118-2122
+  s_eeceb437e86f12::t_c0b49a16d6d089 1944
+  s_eeceb437e86f12::t_663ea73d9e130a 2117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "4387e91d1ef16ba7c5392a6d23051fca497fbb85",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
