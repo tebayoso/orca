@@ -1,0 +1,36 @@
+src/relay/git-handler.test.ts
+  s_eeceb437e86f12::t_b2e67f80d89f48 66,661
+  s_eeceb437e86f12::t_c74540a14ed4e0 662-665,960,988,1567,1627,1657,1704-1710,1798-1804,1851,2018-2023
+src/shared/automation-schedules.ts
+  s_eeceb437e86f12::t_7e7b2c71911f5f 371-374,412
+src/renderer/src/lib/ensure-tasks-tab.test.ts
+  s_eeceb437e86f12::t_b5e17a21c028f8 1-80
+src/relay/relay-command-env.ts
+  s_eeceb437e86f12::t_6b69fb487cc807 154-158
+src/renderer/src/components/tab-group/useTabGroupWorkspaceModel.ts
+  s_eeceb437e86f12::t_293d07c6a44a31 81,83-84
+src/main/git/status-discard-symlink.test.ts
+  s_eeceb437e86f12::t_b2e67f80d89f48 39
+  s_eeceb437e86f12::t_1d53faa476fdca 40-43
+src/main/pty/omp-shell-wrapper.node-pty.test.ts
+  s_eeceb437e86f12::t_55fd6ae2da71cc 119-121
+src/main/git/worktree-separate-git-dir.test.ts
+  s_eeceb437e86f12::t_1ebedc7af6ad17 90
+  s_eeceb437e86f12::t_182b2a1e04949b 91-94
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "4ff18932e7dc827d587bc81864f64ce7f55c5b67",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
