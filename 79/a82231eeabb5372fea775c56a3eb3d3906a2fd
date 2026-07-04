@@ -1,0 +1,52 @@
+src/renderer/src/hooks/modal-return-focus-action.ts
+  s_eeceb437e86f12::t_d0453dd8de9eaf 7
+src/renderer/src/components/terminal/tab-type-cycle.ts
+  s_eeceb437e86f12::t_2696f58beccd1d 1
+src/renderer/src/lib/simulator-palette-search.ts
+  s_eeceb437e86f12::t_39549548f4bd54 31
+src/renderer/src/components/task-page-embed-surface.ts
+  s_eeceb437e86f12::t_d793d8c5dceb38 1-12,16-96
+  s_eeceb437e86f12::t_a9c5f80662bbfe 13-15
+src/renderer/src/components/task-page-embed-surface.test.tsx
+  s_eeceb437e86f12::t_38ba60d1de89a0 1-120
+src/renderer/src/components/TaskPage.tsx
+  s_eeceb437e86f12::t_9955cc50f9a552 7920-7932,7934
+  s_eeceb437e86f12::t_d836f48666699e 8109-8110
+  s_eeceb437e86f12::t_23e9889dd69532 8111-8134,8141-8146
+  s_eeceb437e86f12::t_13daa0e2c39bed 7021-7026
+  s_eeceb437e86f12::t_af1c82a0843bf9 7073
+  s_eeceb437e86f12::t_ce66b5e8921dd9 4208-4220,4224-4235
+  s_eeceb437e86f12::t_6e4a6c7727b414 202
+  s_eeceb437e86f12::t_a5b0fc2bcc5242 6445-6449
+  s_eeceb437e86f12::t_c661c3396f77b8 3105-3109
+  s_eeceb437e86f12::t_f0b900f4bc803f 3172
+  s_eeceb437e86f12::t_79e555b9049f04 6496,6498
+  s_eeceb437e86f12::t_bffeedb6073f2b 3143-3147
+  s_eeceb437e86f12::t_4a3e212cc877f0 3015-3019,3023-3031
+  s_eeceb437e86f12::t_4c99c15dac4f8b 8822-8846,8853-8858
+  s_eeceb437e86f12::t_45bdc167d4d7ed 3125
+  s_eeceb437e86f12::t_5c59a6f2694f8a 7875-7899
+src/renderer/src/hooks/resolve-zoom-target.ts
+  s_eeceb437e86f12::t_727da6ec2e7164 54-58
+  s_eeceb437e86f12::t_b56c969e11e95e 15
+src/renderer/src/components/WorktreeJumpPalette.tsx
+  s_eeceb437e86f12::t_f475344907301c 395-397
+src/renderer/src/lib/workspace-tab-palette-search.ts
+  s_eeceb437e86f12::t_16053130e2ca18 41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "79a82231eeabb5372fea775c56a3eb3d3906a2fd",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
