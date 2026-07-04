@@ -1704,7 +1704,10 @@
         "searchIssues": "Issue を検索",
         "useIssueNumber": "Issue #{{value0}} を使用",
         "noMatchingIssuesLoaded": "一致する issue は読み込まれていません。",
-        "editReviewersWithCurrent": "レビュアーを編集: {{value0}}"
+        "editReviewersWithCurrent": "レビュアーを編集: {{value0}}",
+        "3ef08c8588": "Failed to enable issues: {{value0}}",
+        "ac00881a55": "Enabling…",
+        "faa1abd491": "Enable issues"
       },
       "Terminal": {
         "73768427cf": "閉じる",

@@ -4076,6 +4076,70 @@ export default function TaskPage({
     setTasksRefreshing(true)
     setTaskRefreshNonce((current) => current + 1)
   }, [])
+  // Why: `issues_disabled` is a repo *setting*, not a transient failure —
+  // Retry can never fix it. Offer enabling the feature instead (common on
+  // fresh forks, which inherit issues turned off) and refetch on success.
+  const [enablingIssuesSourceKeys, setEnablingIssuesSourceKeys] = useState<ReadonlySet<string>>(
+    new Set()
+  )
+  const handleEnableRepoIssues = useCallback(
+    async (state: TaskPageRepoSourceState, source: GitHubOwnerRepo): Promise<void> => {
+      const repo = repoMap.get(state.repoId)
+      if (!repo || enablingIssuesSourceKeys.has(state.sourceKey)) {
+        return
+      }
+      setEnablingIssuesSourceKeys((prev) => new Set(prev).add(state.sourceKey))
+      try {
+        const sourceContext = getTaskPageRepoSourceContext(repo, 'github')
+        const repoOwnerSettings = getSettingsForRepoRuntimeOwner(
+          { repos: [repo], settings },
+          repo.id
+        )
+        const targetSettings =
+          sourceContext?.provider === 'github'
+            ? { ...repoOwnerSettings, ...getTaskSourceRuntimeSettings(sourceContext) }
+            : repoOwnerSettings
+        const target = getActiveRuntimeTarget(targetSettings)
+        const result =
+          target.kind === 'environment'
+            ? await callRuntimeRpc<{ ok: true } | { ok: false; error: string }>(
+                target,
+                'github.enableRepoIssues',
+                {
+                  repo: sourceContext?.repoId ?? repo.id,
+                  owner: source.owner,
+                  ownerRepo: source.repo
+                }
+              )
+            : await window.api.gh.enableRepoIssues({
+                repoPath: repo.path,
+                repoId: repo.id,
+                owner: source.owner,
+                repo: source.repo
+              })
+        if (!result.ok) {
+          toast.error(
+            translate(
+              'auto.components.TaskPage.3ef08c8588',
+              'Failed to enable issues: {{value0}}',
+              {
+                value0: result.error
+              }
+            )
+          )
+          return
+        }
+        handleRetryIssuesFetch(state.sourceKey)
+      } finally {
+        setEnablingIssuesSourceKeys((prev) => {
+          const next = new Set(prev)
+          next.delete(state.sourceKey)
+          return next
+        })
+      }
+    },
+    [enablingIssuesSourceKeys, handleRetryIssuesFetch, repoMap, settings]
+  )
   const [newIssueOpen, setNewIssueOpen] = useState(false)
   const [newIssueTitle, setNewIssueTitle] = useState('')
   const [newIssueBody, setNewIssueBody] = useState('')
@@ -9077,21 +9141,39 @@ export default function TaskPage({
                           </span>{' '}
                           — {err.message}
                         </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRetryIssuesFetch(s.sourceKey)}
-                          disabled={tasksLoading || retryingSourceKeys.has(s.sourceKey)}
-                        >
-                          {retryingSourceKeys.has(s.sourceKey) ? (
-                            <span className="flex items-center gap-1">
-                              <LoaderCircle className="h-3 w-3 animate-spin" />
-                              {translate('auto.components.TaskPage.5b6b2af943', 'Retrying…')}
-                            </span>
-                          ) : (
-                            translate('auto.components.TaskPage.0bfbf62f75', 'Retry')
-                          )}
-                        </Button>
+                        {err.type === 'issues_disabled' ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => void handleEnableRepoIssues(s, err.source)}
+                            disabled={tasksLoading || enablingIssuesSourceKeys.has(s.sourceKey)}
+                          >
+                            {enablingIssuesSourceKeys.has(s.sourceKey) ? (
+                              <span className="flex items-center gap-1">
+                                <LoaderCircle className="h-3 w-3 animate-spin" />
+                                {translate('auto.components.TaskPage.ac00881a55', 'Enabling…')}
+                              </span>
+                            ) : (
+                              translate('auto.components.TaskPage.faa1abd491', 'Enable issues')
+                            )}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRetryIssuesFetch(s.sourceKey)}
+                            disabled={tasksLoading || retryingSourceKeys.has(s.sourceKey)}
+                          >
+                            {retryingSourceKeys.has(s.sourceKey) ? (
+                              <span className="flex items-center gap-1">
+                                <LoaderCircle className="h-3 w-3 animate-spin" />
+                                {translate('auto.components.TaskPage.5b6b2af943', 'Retrying…')}
+                              </span>
+                            ) : (
+                              translate('auto.components.TaskPage.0bfbf62f75', 'Retry')
+                            )}
+                          </Button>
+                        )}
                       </div>
                     )
                   })}

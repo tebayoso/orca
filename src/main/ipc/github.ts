@@ -32,6 +32,7 @@ import {
   createIssue,
   updateIssue,
   addIssueComment,
+  enableRepoIssues,
   listLabels,
   listAssignableUsers,
   getAuthenticatedViewer,
@@ -430,6 +431,19 @@ export function registerGitHubHandlers(store: Store, stats: StatsCollector): voi
         repo.issueSourcePreference,
         repoConnectionId(repo),
         fields,
+        ...localGitOptionArgs(store, repo)
+      )
+    }
+  )
+
+  ipcMain.handle(
+    'gh:enableRepoIssues',
+    (_event, args: RepoScopedArgs & { owner: string; repo: string }) => {
+      const repo = assertRegisteredRepo(args, store)
+      return enableRepoIssues(
+        repo.path,
+        { owner: args.owner, repo: args.repo },
+        repoConnectionId(repo),
         ...localGitOptionArgs(store, repo)
       )
     }

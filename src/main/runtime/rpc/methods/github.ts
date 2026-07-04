@@ -156,6 +156,11 @@ const CreateIssue = RepoSelector.extend({
   assignees: z.array(z.string()).optional()
 })
 
+const EnableRepoIssues = RepoSelector.extend({
+  owner: requiredString('Missing owner'),
+  ownerRepo: requiredString('Missing repo')
+})
+
 const IssueUpdate = z.object({
   state: z.enum(['open', 'closed']).optional(),
   title: OptionalString,
@@ -489,6 +494,12 @@ export const GITHUB_METHODS: RpcMethod[] = [
     params: RemovePrReviewers,
     handler: async (params, { runtime }) =>
       runtime.removeRepoPRReviewers(params.repo, params.prNumber, params.reviewers)
+  }),
+  defineMethod({
+    name: 'github.enableRepoIssues',
+    params: EnableRepoIssues,
+    handler: async (params, { runtime }) =>
+      runtime.enableRepoIssuesFeature(params.repo, { owner: params.owner, repo: params.ownerRepo })
   }),
   defineMethod({
     name: 'github.createIssue',

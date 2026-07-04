@@ -1327,6 +1327,12 @@ export type PreloadApi = {
       labels?: string[]
       assignees?: string[]
     }) => Promise<{ ok: true; number: number; url: string } | { ok: false; error: string }>
+    enableRepoIssues: (args: {
+      repoPath: string
+      repoId?: string
+      owner: string
+      repo: string
+    }) => Promise<{ ok: true } | { ok: false; error: string }>
     countWorkItems: (args: { repoPath: string; repoId?: string; query?: string }) => Promise<number>
     listWorkItems: (args: {
       repoPath: string

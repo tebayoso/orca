@@ -1115,6 +1115,14 @@ const api = {
     }): Promise<{ ok: true; number: number; url: string } | { ok: false; error: string }> =>
       ipcRenderer.invoke('gh:createIssue', args),
 
+    enableRepoIssues: (args: {
+      repoPath: string
+      repoId?: string
+      owner: string
+      repo: string
+    }): Promise<{ ok: true } | { ok: false; error: string }> =>
+      ipcRenderer.invoke('gh:enableRepoIssues', args),
+
     countWorkItems: (args: {
       repoPath: string
       repoId?: string

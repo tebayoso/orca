@@ -77,6 +77,7 @@ export {
   createIssue,
   updateIssue,
   addIssueComment,
+  enableRepoIssues,
   listLabels,
   listAssignableUsers
 } from './issues'

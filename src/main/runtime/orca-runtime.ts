@@ -353,6 +353,7 @@ import {
   createIssue,
   updateIssue,
   addIssueComment,
+  enableRepoIssues,
   addPRReviewComment,
   addPRReviewCommentReply,
   listLabels,
@@ -11564,6 +11565,19 @@ export class OrcaRuntimeService {
       repo.issueSourcePreference,
       repo.connectionId ?? null,
       fields,
+      ...this.getLocalGitExecutionOptionArgs(repo)
+    )
+  }
+
+  async enableRepoIssuesFeature(
+    repoSelector: string,
+    ownerRepo: { owner: string; repo: string }
+  ): Promise<Awaited<ReturnType<typeof enableRepoIssues>>> {
+    const repo = await this.resolveRepoSelector(repoSelector)
+    return enableRepoIssues(
+      repo.path,
+      ownerRepo,
+      repo.connectionId ?? null,
       ...this.getLocalGitExecutionOptionArgs(repo)
     )
   }

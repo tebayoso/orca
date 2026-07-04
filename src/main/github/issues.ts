@@ -507,3 +507,32 @@ export async function listAssignableUsers(
     release()
   }
 }
+
+/**
+ * Enable the Issues feature on a repository the caller administers.
+ *
+ * Why: freshly-created forks inherit issues turned OFF, so the tasks page's
+ * issue fetch fails with `issues_disabled` — a state Retry can never fix.
+ * The banner offers this instead; requires admin permission on the repo
+ * (always true for the user's own fork).
+ */
+export async function enableRepoIssues(
+  repoPath: string,
+  ownerRepo: OwnerRepo,
+  connectionId?: string | null,
+  localGitOptions: LocalGitExecOptions = {}
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const ghOptions = ghRepoExecOptions(githubRepoContext(repoPath, connectionId, localGitOptions))
+  await acquire()
+  try {
+    await ghExecFileAsync(
+      ['api', '-X', 'PATCH', `repos/${ownerRepo.owner}/${ownerRepo.repo}`, '-F', 'has_issues=true'],
+      ghOptions
+    )
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : String(err) }
+  } finally {
+    release()
+  }
+}

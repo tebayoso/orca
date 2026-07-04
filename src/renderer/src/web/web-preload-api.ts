@@ -222,6 +222,7 @@ type WebGitHubRouteKey =
   | 'prFileContents'
   | 'listIssues'
   | 'createIssue'
+  | 'enableRepoIssues'
   | 'countWorkItems'
   | 'listWorkItems'
   | 'prChecks'
@@ -270,6 +271,7 @@ type WebGitHubRuntimeMethod =
   | 'github.prFileContents'
   | 'github.listIssues'
   | 'github.createIssue'
+  | 'github.enableRepoIssues'
   | 'github.countWorkItems'
   | 'github.listWorkItems'
   | 'github.prChecks'
@@ -371,6 +373,7 @@ export const GITHUB_WEB_RPC_METHODS = {
   prFileContents: 'github.prFileContents',
   listIssues: 'github.listIssues',
   createIssue: 'github.createIssue',
+  enableRepoIssues: 'github.enableRepoIssues',
   countWorkItems: 'github.countWorkItems',
   listWorkItems: 'github.listWorkItems',
   prChecks: 'github.prChecks',
@@ -1829,6 +1832,11 @@ function createGitHubApi(): WebGitHubApi {
       route<WebGitHubResult<'listIssues'>>(GITHUB_WEB_RPC_METHODS.listIssues, args),
     createIssue: (args) =>
       route<WebGitHubResult<'createIssue'>>(GITHUB_WEB_RPC_METHODS.createIssue, args),
+    enableRepoIssues: ({ repo: ownerRepo, ...args }) =>
+      route<WebGitHubResult<'enableRepoIssues'>>(GITHUB_WEB_RPC_METHODS.enableRepoIssues, {
+        ...args,
+        ownerRepo
+      }),
     countWorkItems: (args) =>
       route<WebGitHubResult<'countWorkItems'>>(GITHUB_WEB_RPC_METHODS.countWorkItems, args),
     listWorkItems: (args) =>
