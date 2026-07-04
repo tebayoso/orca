@@ -1941,6 +1941,7 @@ describe('web GitHub preload API', () => {
         'createIssue',
         'deleteIssueCommentBySlug',
         'diagnoseAuth',
+        'enableRepoIssues',
         'enqueuePRRefresh',
         'getProjectViewTable',
         'issue',
@@ -2112,6 +2113,12 @@ describe('web GitHub preload API', () => {
         args: { repoPath, title: 'Bug', body: 'Details' },
         expectedMethod: 'github.createIssue',
         expectedParams: withRepo({ repoPath, title: 'Bug', body: 'Details' })
+      },
+      {
+        key: 'enableRepoIssues',
+        args: { repoPath, owner: 'acme', repo: 'orca' },
+        expectedMethod: 'github.enableRepoIssues',
+        expectedParams: withRepo({ repoPath, owner: 'acme', ownerRepo: 'orca' })
       },
       {
         key: 'countWorkItems',
