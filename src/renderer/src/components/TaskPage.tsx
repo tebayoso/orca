@@ -199,6 +199,7 @@ import {
   type TaskPageRepoSourceState
 } from '@/components/task-page-cache-selectors'
 import { shouldHideTaskPageListChrome } from '@/components/task-page-list-chrome-visibility'
+import { useTaskPageSurface, type TaskPageEmbedContext } from '@/components/task-page-embed-surface'
 import { findTaskPageJiraIssue } from '@/components/task-page-jira-cache-selectors'
 import { getRepoBackedTaskEmptyState } from '@/components/task-page-empty-state'
 import {
@@ -3011,15 +3012,23 @@ const hasUpstreamCandidateDivergence = (
   !!s.sources.upstreamCandidate &&
   !sameGitHubOwnerRepo(s.sources.originCandidate, s.sources.upstreamCandidate)
 
-export default function TaskPage(): React.JSX.Element {
+export default function TaskPage({
+  embed
+}: {
+  embed?: TaskPageEmbedContext
+} = {}): React.JSX.Element {
   useTranslation()
   const settings = useAppStore((s) => s.settings)
   const persistedUIReady = useAppStore((s) => s.persistedUIReady)
-  const taskResumeState = useAppStore((s) => s.taskResumeState)
-  const setTaskResumeState = useAppStore((s) => s.setTaskResumeState)
-  const pageData = useAppStore((s) => s.taskPageData)
-  const openTaskPage = useAppStore((s) => s.openTaskPage)
-  const closeTaskPage = useAppStore((s) => s.closeTaskPage)
+  const {
+    isEmbedded,
+    pageData,
+    openTaskPage,
+    closeTaskPage,
+    patchPageData,
+    taskResumeState,
+    setTaskResumeState
+  } = useTaskPageSurface(embed)
   const activeModal = useAppStore((s) => s.activeModal)
   const repos = useAppStore((s) => s.repos)
   const sshConnectionStates = useAppStore((s) => s.sshConnectionStates)
@@ -3093,6 +3102,11 @@ export default function TaskPage(): React.JSX.Element {
   // back to "all eligible". An explicit preselection wins so "open tasks for
   // this specific repo" entry points still land on a single-repo view.
   const resolvedInitialSelection = useMemo<ReadonlySet<string>>(() => {
+    // Why: an embedded tasks tab is locked to its worktree's repo — the
+    // persisted defaultRepoSelection and the all-repos fallback must not apply.
+    if (embed) {
+      return new Set([embed.lockedRepoId])
+    }
     const preferred = pageData.preselectedRepoId
     if (preferred && eligibleRepos.some((repo) => repo.id === preferred)) {
       return new Set([preferred])
@@ -3108,7 +3122,7 @@ export default function TaskPage(): React.JSX.Element {
       // an empty selection — see the multi-combobox invariant.
     }
     return getDefaultTaskRepoSelection(eligibleRepos)
-  }, [eligibleRepos, pageData.preselectedRepoId, settings?.defaultRepoSelection])
+  }, [eligibleRepos, embed, pageData.preselectedRepoId, settings?.defaultRepoSelection])
 
   const [repoSelection, setRepoSelection] = useState<ReadonlySet<string>>(resolvedInitialSelection)
   const taskPickerGroups = useMemo(
@@ -3126,6 +3140,11 @@ export default function TaskPage(): React.JSX.Element {
   // the Set every time eligibleRepos changes would churn the fetch effect.
   const prevTaskPickerCountRef = useRef(taskPickerRepos.length)
   useEffect(() => {
+    // Why: embedded tabs pin the selection to the locked repo; pruning and
+    // sticky-all reconciliation only make sense for the pickable global view.
+    if (isEmbedded) {
+      return
+    }
     const prevCount = prevTaskPickerCountRef.current
     prevTaskPickerCountRef.current = taskPickerRepos.length
     const eligibleIds = new Set(eligibleRepos.map((r) => r.id))
@@ -3150,7 +3169,7 @@ export default function TaskPage(): React.JSX.Element {
     if (!areStringSetsEqual(normalized, repoSelection)) {
       setRepoSelection(normalized)
     }
-  }, [eligibleRepos, repoSelection, taskPickerRepos])
+  }, [eligibleRepos, isEmbedded, repoSelection, taskPickerRepos])
 
   const selectedRepos = useMemo(
     () => eligibleRepos.filter((r) => repoSelection.has(r.id)),
@@ -4186,33 +4205,34 @@ export default function TaskPage(): React.JSX.Element {
   )
 
   const closeTaskDetailPage = useCallback(() => {
-    const state = useAppStore.getState()
-    const currentEntry = state.worktreeNavHistory[state.worktreeNavHistoryIndex]
-    if (
-      typeof currentEntry === 'object' &&
-      currentEntry.kind === 'task-detail' &&
-      state.worktreeNavHistoryIndex > 0
-    ) {
-      state.goBackWorktree()
-      return
+    // Why: nav-history rewind only applies to the global view — embedded tabs
+    // never write 'task-detail' entries, so rewinding would pop unrelated ones.
+    if (!isEmbedded) {
+      const state = useAppStore.getState()
+      const currentEntry = state.worktreeNavHistory[state.worktreeNavHistoryIndex]
+      if (
+        typeof currentEntry === 'object' &&
+        currentEntry.kind === 'task-detail' &&
+        state.worktreeNavHistoryIndex > 0
+      ) {
+        state.goBackWorktree()
+        return
+      }
     }
     setDialogWorkItem(null)
     clearSelectedLinearIssue()
-    useAppStore.setState((s) => ({
-      taskPageData: {
-        ...s.taskPageData,
-        openGitHubWorkItem: undefined,
-        openGitHubSourceContext: undefined,
-        openGitHubInitialTab: undefined,
-        openGitLabWorkItem: undefined,
-        openGitLabSourceContext: undefined,
-        openLinearIssue: undefined,
-        openLinearSourceContext: undefined,
-        openJiraIssue: undefined,
-        openJiraSourceContext: undefined
-      }
-    }))
-  }, [clearSelectedLinearIssue, setDialogWorkItem])
+    patchPageData({
+      openGitHubWorkItem: undefined,
+      openGitHubSourceContext: undefined,
+      openGitHubInitialTab: undefined,
+      openGitLabWorkItem: undefined,
+      openGitLabSourceContext: undefined,
+      openLinearIssue: undefined,
+      openLinearSourceContext: undefined,
+      openJiraIssue: undefined,
+      openJiraSourceContext: undefined
+    })
+  }, [clearSelectedLinearIssue, isEmbedded, patchPageData, setDialogWorkItem])
 
   const [selectedJiraIssueKey, setSelectedJiraIssueKey] = useState<string | null>(null)
   const [selectedJiraIssueFallback, setSelectedJiraIssueFallback] = useState<JiraIssue | null>(null)
@@ -6422,6 +6442,11 @@ export default function TaskPage(): React.JSX.Element {
   )
 
   useEffect(() => {
+    // Why: hidden embedded instances must not capture window shortcuts; only
+    // the visible tab may claim Cmd/Ctrl+F.
+    if (isEmbedded && embed?.isActive !== true) {
+      return
+    }
     if (
       taskSource !== 'github' ||
       githubMode !== 'items' ||
@@ -6468,7 +6493,9 @@ export default function TaskPage(): React.JSX.Element {
   }, [
     activeModal,
     dialogWorkItem,
+    embed?.isActive,
     githubMode,
+    isEmbedded,
     newIssueOpen,
     newLinearProjectOpen,
     newLinearIssueOpen,
@@ -6991,6 +7018,12 @@ export default function TaskPage(): React.JSX.Element {
   const githubTasksBusy = tasksLoading || tasksRefreshing || tasksFiltering
 
   useEffect(() => {
+    // Why: embedded tab instances stay mounted while hidden — a window-level
+    // Esc listener from a background tab would close things app-wide. Tabs
+    // close via the tab strip, not Esc.
+    if (isEmbedded) {
+      return
+    }
     // Why: when a modal is open, let it own Esc dismissal.
     if (
       dialogWorkItem ||
@@ -7037,6 +7070,7 @@ export default function TaskPage(): React.JSX.Element {
     activeModal,
     closeTaskPage,
     dialogWorkItem,
+    isEmbedded,
     newIssueOpen,
     newLinearIssueOpen,
     newJiraIssueOpen,
@@ -7838,27 +7872,31 @@ export default function TaskPage(): React.JSX.Element {
                     {/* Why: Close is anchored left in the same row as the
                         source icons so the top chrome is one compact band.
                         Left-aligned keeps it clear of the app sidebar on the
-                        right edge. */}
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-7 rounded-full"
-                          onClick={closeTaskPage}
-                          aria-label={translate(
-                            'auto.components.TaskPage.1a06219d5c',
-                            'Close tasks'
-                          )}
-                        >
-                          <X className="size-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" sideOffset={6}>
-                        {translate('auto.components.TaskPage.4826fd1ad8', 'Close · Esc')}
-                      </TooltipContent>
-                    </Tooltip>
-                    <div className="mx-1 h-5 w-px bg-border/50" aria-hidden />
+                        right edge. Embedded tabs close via the tab strip. */}
+                    {!isEmbedded ? (
+                      <>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 rounded-full"
+                              onClick={closeTaskPage}
+                              aria-label={translate(
+                                'auto.components.TaskPage.1a06219d5c',
+                                'Close tasks'
+                              )}
+                            >
+                              <X className="size-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" sideOffset={6}>
+                            {translate('auto.components.TaskPage.4826fd1ad8', 'Close · Esc')}
+                          </TooltipContent>
+                        </Tooltip>
+                        <div className="mx-1 h-5 w-px bg-border/50" aria-hidden />
+                      </>
+                    ) : null}
                     {visibleSourceOptions.map((source) => {
                       const active = taskSource === source.id
                       const sourceAvailabilityNotice =
@@ -7879,14 +7917,21 @@ export default function TaskPage(): React.JSX.Element {
                                   { taskSource: source.id },
                                   { recordTasksInteraction: false }
                                 )
-                                void updateSettings({ defaultTaskSource: source.id }).catch(() => {
-                                  toast.error(
-                                    translate(
-                                      'auto.components.TaskPage.609532fae7',
-                                      'Failed to save default task source.'
-                                    )
+                                // Why: a tab-local source switch is scoped to
+                                // that tab; only the global page updates the
+                                // app-wide default.
+                                if (!isEmbedded) {
+                                  void updateSettings({ defaultTaskSource: source.id }).catch(
+                                    () => {
+                                      toast.error(
+                                        translate(
+                                          'auto.components.TaskPage.609532fae7',
+                                          'Failed to save default task source.'
+                                        )
+                                      )
+                                    }
                                   )
-                                })
+                                }
                               }}
                               data-task-source={source.id}
                               aria-label={sourceAvailabilityNotice?.label ?? source.label}
@@ -8061,41 +8106,44 @@ export default function TaskPage(): React.JSX.Element {
                       </div>
                     ) : null}
                     {/* Why: Project rows are now repo-scoped too, so the
-                        selection must stay visible in both GitHub modes. */}
-                    <div className="min-w-0 max-w-[220px] shrink-0">
-                      <TaskProjectSourceCombobox
-                        groups={taskPickerGroups}
-                        selected={repoSelection}
-                        getRepoHostLabel={getTaskPickerRepoHostLabel}
-                        onChange={(next) => {
-                          const normalized = normalizeTaskRepoSelection(eligibleRepos, next)
-                          setRepoSelection(normalized)
-                          void updateSettings({ defaultRepoSelection: [...normalized] }).catch(
-                            () => {
+                        selection must stay visible in both GitHub modes.
+                        Embedded tabs are locked to one repo — no picker. */}
+                    {!isEmbedded ? (
+                      <div className="min-w-0 max-w-[220px] shrink-0">
+                        <TaskProjectSourceCombobox
+                          groups={taskPickerGroups}
+                          selected={repoSelection}
+                          getRepoHostLabel={getTaskPickerRepoHostLabel}
+                          onChange={(next) => {
+                            const normalized = normalizeTaskRepoSelection(eligibleRepos, next)
+                            setRepoSelection(normalized)
+                            void updateSettings({ defaultRepoSelection: [...normalized] }).catch(
+                              () => {
+                                toast.error(
+                                  translate(
+                                    'auto.components.TaskPage.dfd72673e7',
+                                    'Failed to save project selection.'
+                                  )
+                                )
+                              }
+                            )
+                          }}
+                          onSelectAll={() => {
+                            const allIds = new Set(taskPickerRepos.map((r) => r.id))
+                            setRepoSelection(allIds)
+                            void updateSettings({ defaultRepoSelection: null }).catch(() => {
                               toast.error(
                                 translate(
                                   'auto.components.TaskPage.dfd72673e7',
                                   'Failed to save project selection.'
                                 )
                               )
-                            }
-                          )
-                        }}
-                        onSelectAll={() => {
-                          const allIds = new Set(taskPickerRepos.map((r) => r.id))
-                          setRepoSelection(allIds)
-                          void updateSettings({ defaultRepoSelection: null }).catch(() => {
-                            toast.error(
-                              translate(
-                                'auto.components.TaskPage.dfd72673e7',
-                                'Failed to save project selection.'
-                              )
-                            )
-                          })
-                        }}
-                        triggerClassName="h-8 w-auto max-w-[220px] rounded-md border border-border/50 bg-muted/50 px-2 text-xs font-medium shadow-sm transition hover:bg-muted/50 focus:ring-2 focus:ring-ring/20 focus:outline-none"
-                      />
-                    </div>
+                            })
+                          }}
+                          triggerClassName="h-8 w-auto max-w-[220px] rounded-md border border-border/50 bg-muted/50 px-2 text-xs font-medium shadow-sm transition hover:bg-muted/50 focus:ring-2 focus:ring-ring/20 focus:outline-none"
+                        />
+                      </div>
+                    ) : null}
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
@@ -8771,40 +8819,43 @@ export default function TaskPage(): React.JSX.Element {
                           )
                         })}
                       </div>
-                      <div className="min-w-0 w-full sm:w-[200px]">
-                        <TaskProjectSourceCombobox
-                          groups={taskPickerGroups}
-                          selected={repoSelection}
-                          getRepoHostLabel={getTaskPickerRepoHostLabel}
-                          onChange={(next) => {
-                            const normalized = normalizeTaskRepoSelection(eligibleRepos, next)
-                            setRepoSelection(normalized)
-                            void updateSettings({ defaultRepoSelection: [...normalized] }).catch(
-                              () => {
+                      {/* Why: embedded tabs are locked to one repo — no picker. */}
+                      {!isEmbedded ? (
+                        <div className="min-w-0 w-full sm:w-[200px]">
+                          <TaskProjectSourceCombobox
+                            groups={taskPickerGroups}
+                            selected={repoSelection}
+                            getRepoHostLabel={getTaskPickerRepoHostLabel}
+                            onChange={(next) => {
+                              const normalized = normalizeTaskRepoSelection(eligibleRepos, next)
+                              setRepoSelection(normalized)
+                              void updateSettings({ defaultRepoSelection: [...normalized] }).catch(
+                                () => {
+                                  toast.error(
+                                    translate(
+                                      'auto.components.TaskPage.dfd72673e7',
+                                      'Failed to save project selection.'
+                                    )
+                                  )
+                                }
+                              )
+                            }}
+                            onSelectAll={() => {
+                              const allIds = new Set(taskPickerRepos.map((r) => r.id))
+                              setRepoSelection(allIds)
+                              void updateSettings({ defaultRepoSelection: null }).catch(() => {
                                 toast.error(
                                   translate(
                                     'auto.components.TaskPage.dfd72673e7',
                                     'Failed to save project selection.'
                                   )
                                 )
-                              }
-                            )
-                          }}
-                          onSelectAll={() => {
-                            const allIds = new Set(taskPickerRepos.map((r) => r.id))
-                            setRepoSelection(allIds)
-                            void updateSettings({ defaultRepoSelection: null }).catch(() => {
-                              toast.error(
-                                translate(
-                                  'auto.components.TaskPage.dfd72673e7',
-                                  'Failed to save project selection.'
-                                )
-                              )
-                            })
-                          }}
-                          triggerClassName="h-8 w-full rounded-md border border-border/50 bg-muted/50 px-2 text-xs font-medium shadow-sm transition hover:bg-muted/50 focus:ring-2 focus:ring-ring/20 focus:outline-none"
-                        />
-                      </div>
+                              })
+                            }}
+                            triggerClassName="h-8 w-full rounded-md border border-border/50 bg-muted/50 px-2 text-xs font-medium shadow-sm transition hover:bg-muted/50 focus:ring-2 focus:ring-ring/20 focus:outline-none"
+                          />
+                        </div>
+                      ) : null}
                     </div>
                     <div
                       className="min-w-0 rounded-md rounded-b-none border border-border/50 bg-muted/50 px-3 pt-2 pb-0 shadow-sm"
