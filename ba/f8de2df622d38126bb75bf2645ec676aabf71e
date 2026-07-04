@@ -1,0 +1,26 @@
+src/renderer/src/components/tasks-pane/TasksPane.tsx
+  s_eeceb437e86f12::t_935535891455c0 1-64
+src/renderer/src/components/tab-group/TabGroupPanel.tsx
+  s_eeceb437e86f12::t_10c9145b631e95 344-345
+src/renderer/src/components/Terminal.tsx
+  s_eeceb437e86f12::t_a442164bb2f012 43
+  s_eeceb437e86f12::t_5a7b79aa9ddf86 2142
+src/renderer/src/components/tasks-pane/TasksPaneOverlayLayer.tsx
+  s_eeceb437e86f12::t_8ed8a859afe781 1-109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "baf8de2df622d38126bb75bf2645ec676aabf71e",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
