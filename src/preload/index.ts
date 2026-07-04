@@ -51,7 +51,9 @@ import type {
   UpdateStatus,
   WorktreeBaseStatusEvent,
   WorktreeDefaultTabsLaunch,
-  WorktreeRemoteBranchConflictEvent
+  WorktreeRemoteBranchConflictEvent,
+  GitHubOwnerRepo,
+  GitHubViewerRepoPermission
 } from '../shared/types'
 import type {
   WarpThemeImportPreview,
@@ -1123,6 +1125,14 @@ const api = {
       repo: string
     }): Promise<{ ok: true } | { ok: false; error: string }> =>
       ipcRenderer.invoke('gh:enableRepoIssues', args),
+
+    viewerRepoPermission: (args: {
+      repoPath: string
+      repoId?: string
+      owner?: string
+      repo?: string
+    }): Promise<{ permission: GitHubViewerRepoPermission; source: GitHubOwnerRepo } | null> =>
+      ipcRenderer.invoke('gh:viewerRepoPermission', args),
 
     countWorkItems: (args: {
       repoPath: string

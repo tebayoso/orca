@@ -223,6 +223,7 @@ type WebGitHubRouteKey =
   | 'listIssues'
   | 'createIssue'
   | 'enableRepoIssues'
+  | 'viewerRepoPermission'
   | 'countWorkItems'
   | 'listWorkItems'
   | 'prChecks'
@@ -272,6 +273,7 @@ type WebGitHubRuntimeMethod =
   | 'github.listIssues'
   | 'github.createIssue'
   | 'github.enableRepoIssues'
+  | 'github.viewerRepoPermission'
   | 'github.countWorkItems'
   | 'github.listWorkItems'
   | 'github.prChecks'
@@ -374,6 +376,7 @@ export const GITHUB_WEB_RPC_METHODS = {
   listIssues: 'github.listIssues',
   createIssue: 'github.createIssue',
   enableRepoIssues: 'github.enableRepoIssues',
+  viewerRepoPermission: 'github.viewerRepoPermission',
   countWorkItems: 'github.countWorkItems',
   listWorkItems: 'github.listWorkItems',
   prChecks: 'github.prChecks',
@@ -1845,6 +1848,11 @@ function createGitHubApi(): WebGitHubApi {
       route<WebGitHubResult<'createIssue'>>(GITHUB_WEB_RPC_METHODS.createIssue, args),
     enableRepoIssues: ({ repo: ownerRepo, ...args }) =>
       route<WebGitHubResult<'enableRepoIssues'>>(GITHUB_WEB_RPC_METHODS.enableRepoIssues, {
+        ...args,
+        ownerRepo
+      }),
+    viewerRepoPermission: ({ repo: ownerRepo, ...args }) =>
+      route<WebGitHubResult<'viewerRepoPermission'>>(GITHUB_WEB_RPC_METHODS.viewerRepoPermission, {
         ...args,
         ownerRepo
       }),

@@ -1986,6 +1986,7 @@ describe('web GitHub preload API', () => {
         'updateProjectItemField',
         'updatePullRequestBySlug',
         'viewer',
+        'viewerRepoPermission',
         'workItem',
         'workItemByOwnerRepo',
         'workItemDetails'
@@ -2118,6 +2119,12 @@ describe('web GitHub preload API', () => {
         key: 'enableRepoIssues',
         args: { repoPath, owner: 'acme', repo: 'orca' },
         expectedMethod: 'github.enableRepoIssues',
+        expectedParams: withRepo({ repoPath, owner: 'acme', ownerRepo: 'orca' })
+      },
+      {
+        key: 'viewerRepoPermission',
+        args: { repoPath, owner: 'acme', repo: 'orca' },
+        expectedMethod: 'github.viewerRepoPermission',
         expectedParams: withRepo({ repoPath, owner: 'acme', ownerRepo: 'orca' })
       },
       {

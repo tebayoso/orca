@@ -63,6 +63,7 @@ import type {
   GitHubPRReviewCommentInput,
   GitHubCommentResult,
   GitHubOwnerRepo,
+  GitHubViewerRepoPermission,
   GitHubWorkItem,
   GitHubWorkItemDetails,
   GitHubViewer,
@@ -1334,6 +1335,12 @@ export type PreloadApi = {
       owner: string
       repo: string
     }) => Promise<{ ok: true } | { ok: false; error: string }>
+    viewerRepoPermission: (args: {
+      repoPath: string
+      repoId?: string
+      owner?: string
+      repo?: string
+    }) => Promise<{ permission: GitHubViewerRepoPermission; source: GitHubOwnerRepo } | null>
     countWorkItems: (args: { repoPath: string; repoId?: string; query?: string }) => Promise<number>
     listWorkItems: (args: {
       repoPath: string

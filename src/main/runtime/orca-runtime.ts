@@ -363,6 +363,7 @@ import type { GitHubPRBranchLookupOptions } from '../github/client'
 import { resolveGitHubPrStartPoint } from '../github/pr-start-point'
 import { fetchPrHeadTrackingRef } from '../github/pr-head-tracking-ref'
 import { getWorkItemDetails, getPRFileContents } from '../github/work-item-details'
+import { getViewerRepoPermission } from '../github/viewer-repo-permission'
 import { getRateLimit } from '../github/rate-limit'
 import {
   closeMR as closeGitLabMR,
@@ -11582,6 +11583,22 @@ export class OrcaRuntimeService {
       ownerRepo,
       repo.connectionId ?? null,
       ...this.getLocalGitExecutionOptionArgs(repo)
+    )
+  }
+
+  async getRepoViewerPermission(
+    repoSelector: string,
+    overrideOwnerRepo: { owner: string; repo: string } | null
+  ): Promise<Awaited<ReturnType<typeof getViewerRepoPermission>>> {
+    const repo = await this.resolveRepoSelector(repoSelector)
+    // Why: positional call — the optional git-options tuple cannot be spread
+    // in front of the trailing override without shifting it when empty.
+    return getViewerRepoPermission(
+      repo.path,
+      repo.issueSourcePreference,
+      repo.connectionId ?? null,
+      this.getLocalGitExecutionOptionArgs(repo)[0] ?? {},
+      overrideOwnerRepo
     )
   }
 

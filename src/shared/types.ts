@@ -1895,6 +1895,11 @@ export type GetRateLimitResult =
  * the issues-side fetch failed, but any PR-side items that succeeded are still
  * present in `items`. Consumers should render `items` alongside the error banner.
  */
+/** Highest permission tier the authenticated viewer holds on a repository,
+ *  derived from the REST `permissions` flags. Drives read-only rendering of
+ *  mutation affordances (state/labels/assignees) in the item dialog. */
+export type GitHubViewerRepoPermission = 'admin' | 'maintain' | 'write' | 'triage' | 'read'
+
 export type ListWorkItemsResult<T> = {
   items: T[]
   sources: {

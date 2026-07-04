@@ -161,6 +161,11 @@ const EnableRepoIssues = RepoSelector.extend({
   ownerRepo: requiredString('Missing repo')
 })
 
+const ViewerRepoPermission = RepoSelector.extend({
+  owner: z.string().optional(),
+  ownerRepo: z.string().optional()
+})
+
 const IssueUpdate = z.object({
   state: z.enum(['open', 'closed']).optional(),
   title: OptionalString,
@@ -494,6 +499,15 @@ export const GITHUB_METHODS: RpcMethod[] = [
     params: RemovePrReviewers,
     handler: async (params, { runtime }) =>
       runtime.removeRepoPRReviewers(params.repo, params.prNumber, params.reviewers)
+  }),
+  defineMethod({
+    name: 'github.viewerRepoPermission',
+    params: ViewerRepoPermission,
+    handler: async (params, { runtime }) =>
+      runtime.getRepoViewerPermission(
+        params.repo,
+        params.owner && params.ownerRepo ? { owner: params.owner, repo: params.ownerRepo } : null
+      )
   }),
   defineMethod({
     name: 'github.enableRepoIssues',
