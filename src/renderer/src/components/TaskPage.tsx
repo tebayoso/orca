@@ -8605,6 +8605,7 @@ export default function TaskPage({
                                   preference={repo.issueSourcePreference}
                                   origin={s.sources.originCandidate}
                                   upstream={s.sources.upstreamCandidate}
+                                  showMixed
                                   onChange={(next) => {
                                     void setIssueSourcePreference(repo.id, repo.path, next)
                                   }}

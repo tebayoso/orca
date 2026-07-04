@@ -29,6 +29,11 @@ export type IssueSourceSelectorProps = {
    *  slug in a tooltip. Used where horizontal space is tight (composer
    *  description line). Defaults to `'labeled'` on the Tasks header. */
   density?: 'labeled' | 'compact'
+  /** Why: 'mixed' is a *list* concept (merge both remotes). Single-target
+   *  surfaces like the Create Issue composer must not offer it — a new issue
+   *  is filed in exactly one repo, and 'mixed' resolves to the auto heuristic
+   *  there, which would make the pill a silent alias for Upstream. */
+  showMixed?: boolean
   /** Suppresses the "Issues from <slug>" hover tooltip. Passed by callers on
    *  surfaces that only act on issues (e.g. the Create Issue composer) where
    *  the caveat is implicit — on mixed surfaces like the Tasks header the
@@ -85,7 +90,8 @@ export default function IssueSourceSelector({
   disabled,
   className,
   density = 'labeled',
-  suppressTooltip = false
+  suppressTooltip = false,
+  showMixed = false
 }: IssueSourceSelectorProps): React.JSX.Element | null {
   if (!origin || !upstream) {
     return null
@@ -97,10 +103,15 @@ export default function IssueSourceSelector({
   // Why: in `'auto'`/unset, the effective pill is whatever `getIssueOwnerRepo`
   // picks — upstream-if-present-else-origin. Since we only render here when
   // upstream exists, the heuristic resolves to upstream.
+  // Why: on single-target surfaces a persisted 'mixed' resolves like 'auto'
+  // (upstream-if-exists), so highlight the pill that reflects the actual
+  // target instead of a hidden third state.
   const effective: 'upstream' | 'origin' | 'mixed' =
-    preference === 'upstream' || preference === 'origin' || preference === 'mixed'
+    preference === 'upstream' || preference === 'origin'
       ? preference
-      : 'upstream'
+      : preference === 'mixed' && showMixed
+        ? 'mixed'
+        : 'upstream'
 
   const upstreamSlug = `${upstream.owner}/${upstream.repo}`
   const originSlug = `${origin.owner}/${origin.repo}`
@@ -165,25 +176,27 @@ export default function IssueSourceSelector({
           ? 'O'
           : translate('auto.components.github.IssueSourceSelector.51d1608920', 'Origin')}
       </button>
-      <button
-        type="button"
-        aria-pressed={effective === 'mixed'}
-        disabled={disabled}
-        onClick={() => {
-          if (disabled || persistedMatches('mixed')) {
-            return
-          }
-          onChange('mixed')
-        }}
-        className={cn(
-          segmentClass(effective === 'mixed' ? 'active' : 'inactive', disabled),
-          'border-l border-border/40'
-        )}
-      >
-        {density === 'compact'
-          ? 'M'
-          : translate('auto.components.github.IssueSourceSelector.9d1ff63799', 'Mixed')}
-      </button>
+      {showMixed ? (
+        <button
+          type="button"
+          aria-pressed={effective === 'mixed'}
+          disabled={disabled}
+          onClick={() => {
+            if (disabled || persistedMatches('mixed')) {
+              return
+            }
+            onChange('mixed')
+          }}
+          className={cn(
+            segmentClass(effective === 'mixed' ? 'active' : 'inactive', disabled),
+            'border-l border-border/40'
+          )}
+        >
+          {density === 'compact'
+            ? 'M'
+            : translate('auto.components.github.IssueSourceSelector.9d1ff63799', 'Mixed')}
+        </button>
+      ) : null}
     </div>
   )
 
