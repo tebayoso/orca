@@ -37,7 +37,10 @@ export type IssueSourceSelectorProps = {
   showMixed?: boolean
   /** True while a source flip's refetch is in flight. Pills disable
    *  immediately; the trailing spinner appears after ~200ms so fast local
-   *  flips show nothing (STYLEGUIDE UX rule 1, SSH corollary). */
+   *  flips show nothing (STYLEGUIDE UX rule 1, SSH corollary). Leave
+   *  undefined on surfaces that never refetch on flip (the Create Issue
+   *  composer) — the reserved spinner slot only renders when the prop is
+   *  wired, so those surfaces don't carry a permanently empty cap. */
   busy?: boolean
   /** Suppresses the "Issues from <slug>" hover tooltip. Passed by callers on
    *  surfaces that only act on issues (e.g. the Create Issue composer) where
@@ -97,13 +100,14 @@ export default function IssueSourceSelector({
   density = 'labeled',
   suppressTooltip = false,
   showMixed = false,
-  busy = false
+  busy
 }: IssueSourceSelectorProps): React.JSX.Element | null {
+  const busySlotReserved = busy !== undefined
   // Why: delay the visible spinner ~200ms — local flips often settle before
   // that and anything visible would read as a glitch; SSH flips get feedback.
   const [busyVisible, setBusyVisible] = useState(false)
   useEffect(() => {
-    if (!busy) {
+    if (busy !== true) {
       setBusyVisible(false)
       return
     }
@@ -143,12 +147,12 @@ export default function IssueSourceSelector({
     preference === target
   // Why: bind disabled the moment a flip dispatches so double-clicks can't
   // race two source swaps; the spinner is the delayed *visible* half.
-  const interactionDisabled = disabled || busy
+  const interactionDisabled = disabled || busy === true
 
   const group = (
     <div
       role="group"
-      aria-busy={busy}
+      aria-busy={busy === true}
       aria-label={translate(
         'auto.components.github.IssueSourceSelector.787c970baf',
         'Issue source'
@@ -221,14 +225,20 @@ export default function IssueSourceSelector({
             : translate('auto.components.github.IssueSourceSelector.9d1ff63799', 'Mixed')}
         </button>
       ) : null}
-      {/* Why: permanently reserved footprint — the chip must not resize
-          mid-action when the spinner becomes visible (UX rule 1). */}
-      <span className="inline-flex w-4 items-center justify-center self-stretch border-l border-border/40">
-        <LoaderCircle
-          aria-hidden="true"
-          className={cn('size-3 text-muted-foreground', busyVisible ? 'animate-spin' : 'invisible')}
-        />
-      </span>
+      {/* Why: permanently reserved footprint on busy-capable surfaces — the
+          chip must not resize mid-action when the spinner becomes visible
+          (UX rule 1). Surfaces that never flip-refetch skip the slot. */}
+      {busySlotReserved ? (
+        <span className="inline-flex w-4 items-center justify-center self-stretch border-l border-border/40">
+          <LoaderCircle
+            aria-hidden="true"
+            className={cn(
+              'size-3 text-muted-foreground',
+              busyVisible ? 'animate-spin' : 'invisible'
+            )}
+          />
+        </span>
+      ) : null}
     </div>
   )
 
