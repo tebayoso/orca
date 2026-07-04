@@ -4,6 +4,10 @@ import {
   type GitForkSyncExpectedUpstream,
   type GitForkSyncResult
 } from '../../shared/git-fork-sync'
+import {
+  addUpstreamRemote,
+  type GitAddUpstreamRemoteResult
+} from '../../shared/git-upstream-remote'
 import type { GitRuntimeOptions } from './git-runtime-options'
 import { gitOptionsForWorktree } from './git-runtime-options'
 import { gitExecFileAsync } from './runner'
@@ -30,4 +34,19 @@ export async function gitSyncForkDefaultBranch(
   } finally {
     clearTimeout(timeout)
   }
+}
+
+export async function gitAddUpstreamRemote(
+  worktreePath: string,
+  expectedUpstream: GitForkSyncExpectedUpstream,
+  options: GitRuntimeOptions = {}
+): Promise<GitAddUpstreamRemoteResult> {
+  return addUpstreamRemote(
+    (args) =>
+      gitExecFileAsync(args, {
+        ...gitOptionsForWorktree(worktreePath, options),
+        timeout: 30_000
+      }),
+    expectedUpstream
+  )
 }

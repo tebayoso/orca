@@ -522,6 +522,12 @@ export async function enableRepoIssues(
   connectionId?: string | null,
   localGitOptions: LocalGitExecOptions = {}
 ): Promise<{ ok: true } | { ok: false; error: string }> {
+  // Why: owner/repo cross the untrusted IPC boundary and are interpolated
+  // into the gh API path of a mutating PATCH — reject anything that could
+  // smuggle extra path segments or query strings.
+  if (!/^[A-Za-z0-9_.-]+$/.test(ownerRepo.owner) || !/^[A-Za-z0-9_.-]+$/.test(ownerRepo.repo)) {
+    return { ok: false, error: 'Invalid repository slug' }
+  }
   const ghOptions = ghRepoExecOptions(githubRepoContext(repoPath, connectionId, localGitOptions))
   await acquire()
   try {

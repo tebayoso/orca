@@ -28,6 +28,7 @@ import type {
   GitPushTarget,
   GitStagingArea,
   GitForkSyncExpectedUpstream,
+  GitAddUpstreamRemoteResult,
   GitForkSyncResult,
   GitUpstreamStatus,
   GhosttyImportPreview,
@@ -2793,6 +2794,11 @@ const api = {
       connectionId?: string
       expectedUpstream: GitForkSyncExpectedUpstream
     }): Promise<GitForkSyncResult> => ipcRenderer.invoke('git:syncFork', args),
+    addUpstreamRemote: (args: {
+      worktreePath: string
+      connectionId?: string
+      expectedUpstream: GitForkSyncExpectedUpstream
+    }): Promise<GitAddUpstreamRemoteResult> => ipcRenderer.invoke('git:addUpstreamRemote', args),
     push: (args: {
       worktreePath: string
       publish?: boolean

@@ -50,7 +50,7 @@ function parseAheadBehind(stdout: string): { ahead: number; behind: number } {
   }
 }
 
-async function remoteExists(runGit: GitForkSyncRunner, remote: string): Promise<boolean> {
+export async function remoteExists(runGit: GitForkSyncRunner, remote: string): Promise<boolean> {
   const { stdout } = await runGit(['remote'])
   for (const rawLine of iterateGitOutputLines(stdout)) {
     if (rawLine.trim() === remote) {
@@ -151,7 +151,7 @@ export function validateGitForkSyncExpectedUpstream(
   return { owner, repo }
 }
 
-async function remoteMatchesExpectedUpstream(
+export async function remoteMatchesExpectedUpstream(
   runGit: GitForkSyncRunner,
   remote: string,
   expected: GitForkSyncExpectedUpstream

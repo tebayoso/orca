@@ -50,6 +50,7 @@ import type {
   GitConflictOperation,
   GitDiffResult,
   GitForkSyncExpectedUpstream,
+  GitAddUpstreamRemoteResult,
   GitForkSyncResult,
   GitPushTarget,
   GitStagingArea,
@@ -2372,6 +2373,11 @@ export type PreloadApi = {
       connectionId?: string
       expectedUpstream: GitForkSyncExpectedUpstream
     }) => Promise<GitForkSyncResult>
+    addUpstreamRemote: (args: {
+      worktreePath: string
+      connectionId?: string
+      expectedUpstream: GitForkSyncExpectedUpstream
+    }) => Promise<GitAddUpstreamRemoteResult>
     push: (args: {
       worktreePath: string
       publish?: boolean

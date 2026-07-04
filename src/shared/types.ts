@@ -98,6 +98,7 @@ export type RepoKind = 'git' | 'folder'
  */
 export type IssueSourcePreference = 'upstream' | 'origin' | 'auto' | 'mixed'
 export type { ForkSyncMode, GitForkSyncExpectedUpstream, GitForkSyncResult } from './git-fork-sync'
+export type { GitAddUpstreamRemoteResult } from './git-upstream-remote'
 export type ExternalWorktreeVisibility = 'hide' | 'show'
 
 export type ProjectProviderIdentity = {

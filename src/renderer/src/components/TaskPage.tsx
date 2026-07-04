@@ -3012,6 +3012,18 @@ const hasUpstreamCandidateDivergence = (
   !!s.sources.upstreamCandidate &&
   !sameGitHubOwnerRepo(s.sources.originCandidate, s.sources.upstreamCandidate)
 
+// Why: a fork cloned without an `upstream` remote can't resolve upstream
+// issues at all — GitHub knows the parent (repo.upstream metadata) but the
+// source resolution only reads local remotes. Offer adding the remote.
+const isForkMissingUpstreamRemote = (
+  s: TaskPageRepoSourceState,
+  repoUpstream: GitHubOwnerRepo | null | undefined
+): boolean =>
+  !!s.sources?.originCandidate &&
+  !s.sources.upstreamCandidate &&
+  !!repoUpstream &&
+  !sameGitHubOwnerRepo(s.sources.originCandidate, repoUpstream)
+
 export default function TaskPage({
   embed
 }: {
@@ -4076,6 +4088,60 @@ export default function TaskPage({
     setTasksRefreshing(true)
     setTaskRefreshNonce((current) => current + 1)
   }, [])
+  const [addingUpstreamRepoIds, setAddingUpstreamRepoIds] = useState<ReadonlySet<string>>(new Set())
+  const handleAddUpstreamRemote = useCallback(
+    async (repo: Repo): Promise<void> => {
+      if (!repo.upstream || addingUpstreamRepoIds.has(repo.id)) {
+        return
+      }
+      setAddingUpstreamRepoIds((prev) => new Set(prev).add(repo.id))
+      try {
+        const result = await window.api.git.addUpstreamRemote({
+          worktreePath: repo.path,
+          connectionId: repo.connectionId ?? undefined,
+          expectedUpstream: { owner: repo.upstream.owner, repo: repo.upstream.repo }
+        })
+        if (!result.ok) {
+          const reason =
+            result.reason === 'upstream-exists-mismatch'
+              ? translate(
+                  'auto.components.TaskPage.fb902585c4',
+                  'An upstream remote already exists and points at a different repository.'
+                )
+              : result.reason === 'missing-origin'
+                ? translate(
+                    'auto.components.TaskPage.4d91839b5d',
+                    'No origin remote is configured.'
+                  )
+                : (result.message ?? result.reason)
+          toast.error(
+            translate(
+              'auto.components.TaskPage.46a2f4072a',
+              'Failed to add upstream remote: {{value0}}',
+              { value0: reason }
+            )
+          )
+          return
+        }
+        handleRefreshGithubTasks()
+      } catch (error) {
+        toast.error(
+          translate(
+            'auto.components.TaskPage.46a2f4072a',
+            'Failed to add upstream remote: {{value0}}',
+            { value0: error instanceof Error ? error.message : String(error) }
+          )
+        )
+      } finally {
+        setAddingUpstreamRepoIds((prev) => {
+          const next = new Set(prev)
+          next.delete(repo.id)
+          return next
+        })
+      }
+    },
+    [addingUpstreamRepoIds, handleRefreshGithubTasks]
+  )
   // Why: `issues_disabled` is a repo *setting*, not a transient failure —
   // Retry can never fix it. Offer enabling the feature instead (common on
   // fresh forks, which inherit issues turned off) and refetch on success.
@@ -4130,6 +4196,14 @@ export default function TaskPage({
           return
         }
         handleRetryIssuesFetch(state.sourceKey)
+      } catch (error) {
+        // Why: callRuntimeRpc rejects on transport failures/timeouts — without
+        // this the rejection is unhandled and the user gets no feedback.
+        toast.error(
+          translate('auto.components.TaskPage.3ef08c8588', 'Failed to enable issues: {{value0}}', {
+            value0: error instanceof Error ? error.message : String(error)
+          })
+        )
       } finally {
         setEnablingIssuesSourceKeys((prev) => {
           const next = new Set(prev)
@@ -8430,9 +8504,14 @@ export default function TaskPage({
                       // + tooltip already announce the source, so the "Issues
                       // from {slug}" chip is only shown when the selector does
                       // not render (no upstream remote — nothing to toggle).
-                      const rows = perRepoSourceState.filter(
-                        (s) => hasUpstreamCandidateDivergence(s) || hasDivergentSources(s)
-                      )
+                      const rows = perRepoSourceState.filter((s) => {
+                        const repo = selectedRepos.find((r) => r.id === s.repoId)
+                        return (
+                          hasUpstreamCandidateDivergence(s) ||
+                          hasDivergentSources(s) ||
+                          isForkMissingUpstreamRemote(s, repo?.upstream)
+                        )
+                      })
                       if (rows.length === 0) {
                         return null
                       }
@@ -8442,6 +8521,49 @@ export default function TaskPage({
                             const repo = selectedRepos.find((r) => r.id === s.repoId)
                             const showRepoBadgeLabel = selectedRepos.length > 1 && repo
                             const selectorRenderable = hasUpstreamCandidateDivergence(s)
+                            if (
+                              !selectorRenderable &&
+                              repo?.upstream &&
+                              isForkMissingUpstreamRemote(s, repo.upstream)
+                            ) {
+                              const adding = addingUpstreamRepoIds.has(repo.id)
+                              return (
+                                <div key={s.repoId} className={issueSourceChipClass}>
+                                  {showRepoBadgeLabel ? (
+                                    <RepoBadgeLabel
+                                      name={repo.displayName}
+                                      color={repo.badgeColor}
+                                      badgeClassName="size-1.5"
+                                      className="text-[10px] text-muted-foreground"
+                                    />
+                                  ) : null}
+                                  <button
+                                    type="button"
+                                    disabled={adding}
+                                    onClick={() => void handleAddUpstreamRemote(repo)}
+                                    className="inline-flex items-center gap-1 rounded border border-border/40 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+                                  >
+                                    {adding ? (
+                                      <>
+                                        <LoaderCircle className="h-3 w-3 animate-spin" />
+                                        {translate(
+                                          'auto.components.TaskPage.8c18355ff8',
+                                          'Adding…'
+                                        )}
+                                      </>
+                                    ) : (
+                                      translate(
+                                        'auto.components.TaskPage.9b13066e18',
+                                        'Add upstream remote'
+                                      )
+                                    )}
+                                  </button>
+                                  <span className="font-mono">
+                                    {repo.upstream.owner}/{repo.upstream.repo}
+                                  </span>
+                                </div>
+                              )
+                            }
                             // Why: the static indicator has its own wrapping
                             // chip styles, so we render it standalone and don't
                             // nest it inside our own chip — nesting would

@@ -1582,6 +1582,17 @@ function createGitApi(): NonNullable<Partial<PreloadApi>['git']> {
         60_000
       )
     },
+    addUpstreamRemote: async ({ worktreePath, expectedUpstream }) => {
+      const worktree = await resolveRuntimeWorktreeByPath(worktreePath)
+      return callRuntimeResult(
+        'git.addUpstreamRemote',
+        {
+          worktree: toRuntimeWorktreeSelector(worktree.id),
+          expectedUpstream
+        },
+        30_000
+      )
+    },
     push: async ({ worktreePath, publish, pushTarget }) => {
       const worktree = await resolveRuntimeWorktreeByPath(worktreePath)
       await callRuntimeResult('git.push', {

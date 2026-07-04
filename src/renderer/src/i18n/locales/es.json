@@ -1707,7 +1707,12 @@
         "editReviewersWithCurrent": "Editar revisores: {{value0}}",
         "3ef08c8588": "Failed to enable issues: {{value0}}",
         "ac00881a55": "Enabling…",
-        "faa1abd491": "Enable issues"
+        "faa1abd491": "Enable issues",
+        "fb902585c4": "An upstream remote already exists and points at a different repository.",
+        "4d91839b5d": "No origin remote is configured.",
+        "46a2f4072a": "Failed to add upstream remote: {{value0}}",
+        "8c18355ff8": "Adding…",
+        "9b13066e18": "Add upstream remote"
       },
       "Terminal": {
         "73768427cf": "Cerca",
