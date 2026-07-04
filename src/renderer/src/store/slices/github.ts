@@ -872,7 +872,11 @@ function repoCacheKeyPrefixes(repoId: string, repoPath?: string): string[] {
 }
 
 function matchesRepoCacheKey(key: string, prefixes: readonly string[]): boolean {
-  return prefixes.some((prefix) => key.startsWith(prefix))
+  // Why: work-items cache keys optionally carry a host/source scope segment
+  // in front (`{scope}::{repoId}::…`, see workItemsCacheKey). Prefix-only
+  // matching missed those, so issue-source preference flips evicted nothing
+  // for host-scoped repos and the refetch served the old source from cache.
+  return prefixes.some((prefix) => key.startsWith(prefix) || key.includes(`::${prefix}`))
 }
 
 function clearInflightWorkItemsForRepo(repoId: string, repoPath?: string): void {
@@ -4249,11 +4253,10 @@ export const createGitHubSlice: StateCreator<AppState, [], [], GitHubSlice> = (s
     // cache keys are repo-scoped, but we also drop legacy path-scoped entries
     // that may have been restored from older persisted cache data.
     set((s) => {
-      const prefix = `${repoId}::`
-      const legacyPrefix = `${repoPath}::`
+      const prefixes = repoCacheKeyPrefixes(repoId, repoPath)
       const next: Record<string, CacheEntry<GitHubWorkItem[]>> = {}
       for (const [key, entry] of Object.entries(s.workItemsCache)) {
-        if (!key.startsWith(prefix) && !key.startsWith(legacyPrefix)) {
+        if (!matchesRepoCacheKey(key, prefixes)) {
           next[key] = entry
         }
       }

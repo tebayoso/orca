@@ -1407,12 +1407,12 @@ async function listMixedWorkItems(
   const issuesError = originResult.errors?.issues ?? upstreamResult.errors?.issues
   return {
     items,
-    // Why: report the upstream pass's effective sources — under 'mixed' the
-    // primary (dialog/detail) source stays the auto heuristic, which resolves
-    // to upstream whenever one exists.
+    // Why: report each side's auto-primary source — issues resolve to
+    // upstream, PRs to origin — matching the dialog/detail routing so the
+    // header indicators describe where clicks actually land.
     sources: {
       issues: upstreamResult.sources.issues,
-      prs: upstreamResult.sources.prs,
+      prs: originResult.sources.prs,
       originCandidate: origin,
       upstreamCandidate: upstream
     },
