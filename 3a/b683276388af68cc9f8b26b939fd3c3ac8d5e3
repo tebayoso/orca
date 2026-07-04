@@ -1,0 +1,44 @@
+src/renderer/src/i18n/locales/es.json
+  s_eeceb437e86f12::t_2612a1d5009810 320-324,2693-2696,2766-2777,12320-12326
+  s_eeceb437e86f12::t_e7d459eb264d6e 12327
+src/renderer/src/components/Terminal.tsx
+  s_eeceb437e86f12::t_53b223b3adc858 1860-1861
+  s_eeceb437e86f12::t_63ac5059d7c632 1754-1758,1769-1771
+  s_eeceb437e86f12::t_0274b58ea42061 1772-1773
+src/renderer/src/hooks/ipc-tab-switch.ts
+  s_eeceb437e86f12::t_8dcf47b8f08ff7 77-82
+src/renderer/src/i18n/locales/ja.json
+  s_eeceb437e86f12::t_2612a1d5009810 320-324,2693-2696,2766-2777,12320-12326
+  s_eeceb437e86f12::t_45b768f221bfee 12327
+src/renderer/src/lib/tab-number-shortcuts.ts
+  s_eeceb437e86f12::t_8dcf47b8f08ff7 102-107
+src/renderer/src/store/selectors.ts
+  s_eeceb437e86f12::t_8dcf47b8f08ff7 138-140
+src/renderer/src/i18n/locales/zh.json
+  s_eeceb437e86f12::t_2612a1d5009810 320-324,2693-2696,2766-2777,12320-12326
+  s_eeceb437e86f12::t_bf86c594fc92b3 12327
+src/renderer/src/i18n/locales/ko.json
+  s_eeceb437e86f12::t_2612a1d5009810 320-324,2693-2696,2766-2777,12320-12326
+  s_eeceb437e86f12::t_84722632d6c475 12327
+src/renderer/src/i18n/locales/en.json
+  s_eeceb437e86f12::t_2612a1d5009810 320-324,2693-2696,2766-2777,12320-12326
+  s_eeceb437e86f12::t_c638c2a4ceca63 12327
+src/renderer/src/components/floating-terminal/FloatingTerminalPanel.tsx
+  s_eeceb437e86f12::t_54edad651b3041 355-358,365-366,368-372,400-402,405,420-422,787,1497
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "3ab683276388af68cc9f8b26b939fd3c3ac8d5e3",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
