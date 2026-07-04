@@ -767,8 +767,9 @@ export type TabContentType =
   | 'check-details'
   | 'browser'
   | 'simulator'
+  | 'tasks'
 
-export type WorkspaceVisibleTabType = 'terminal' | 'editor' | 'browser' | 'simulator'
+export type WorkspaceVisibleTabType = 'terminal' | 'editor' | 'browser' | 'simulator' | 'tasks'
 export type CtrlTabOrderMode = 'mru' | 'sequential'
 
 export type Tab = {
