@@ -1,0 +1,31 @@
+src/main/github/github-repository-identity.ts
+  s_eeceb437e86f12::t_cbb2a849f2ca51 291-293
+src/main/runtime/rpc/methods/repo-update-schema.ts
+  s_eeceb437e86f12::t_7c487b72c82f3e 51
+config/vitest.config.ts
+  s_eeceb437e86f12::t_46d28ae4842f0b 18
+src/shared/types.ts
+  s_eeceb437e86f12::t_88df03ccb95fa8 95-97,99
+src/main/ipc/repos.ts
+  s_eeceb437e86f12::t_7c487b72c82f3e 1976-1977
+config/vitest-git-background-jobs-env.ts
+  s_eeceb437e86f12::t_db52ed9c5d2e6d 6
+  s_eeceb437e86f12::t_8924d2b2d32910 19-23
+  s_eeceb437e86f12::t_7bf348be17032a 1-5,7-18,24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "ace3682e76b83e1fc24d15d2d9ab39b0afc7ed33",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
