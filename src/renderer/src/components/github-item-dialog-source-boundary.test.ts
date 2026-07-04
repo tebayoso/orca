@@ -193,7 +193,7 @@ describe('GitHubItemDialog source host boundaries', () => {
     expect(actionsSection).toContain('getTaskSourceRuntimeSettings(sourceContext)')
     expect(actionsSection).toContain('getActiveRuntimeTarget(sourceSettings)')
     expect(actionsSection).toContain(
-      'const canMergeWithRepoContext = !!repoPath || mergeTarget.kind ==='
+      "const canMergeWithRepoContext = (!!repoPath || mergeTarget.kind === 'environment') && !readOnly"
     )
     expect(actionsSection).toContain("'github.mergePR'")
     expect(actionsSection).toContain("'github.setPRAutoMerge'")
