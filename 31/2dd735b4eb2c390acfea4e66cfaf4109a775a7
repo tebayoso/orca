@@ -1,0 +1,24 @@
+src/main/github/client.ts
+  s_eeceb437e86f12::t_e42ab1493e08bb 1410-1412,1415
+src/renderer/src/store/slices/github.test.ts
+  s_eeceb437e86f12::t_5933291b080b7f 195-215,217-218,222-223
+  s_eeceb437e86f12::t_46a4571fd33c2c 216,219-221,224-225
+src/renderer/src/store/slices/github.ts
+  s_eeceb437e86f12::t_e42ab1493e08bb 875-879,4256,4259
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "312dd735b4eb2c390acfea4e66cfaf4109a775a7",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
