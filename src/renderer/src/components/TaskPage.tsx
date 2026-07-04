@@ -11316,7 +11316,7 @@ export default function TaskPage({
               const fallback = newIssueTargetRepo?.displayName ?? 'this repository'
               return (
                 <DialogDescription>
-                  {translate('auto.components.TaskPage.9f2b4c03a6', 'Filing in')}
+                  {translate('auto.components.TaskPage.9f2b4c03a6', 'Filing in')}{' '}
                   {issuesSlug ?? fallback}
                 </DialogDescription>
               )
