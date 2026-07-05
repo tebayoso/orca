@@ -813,10 +813,16 @@ export class GitHandler {
     const expectedUpstream = validateGitForkSyncExpectedUpstream(params.expectedUpstream, {
       required: true
     })
-    return addUpstreamRemote(
-      (args) => this.git(args, worktreePath, { nonInteractive: true }),
-      expectedUpstream
-    )
+    try {
+      return await addUpstreamRemote(
+        (args) => this.git(args, worktreePath, { nonInteractive: true }),
+        expectedUpstream
+      )
+    } catch (error) {
+      // Why: match the other mutating remote ops — raw execFile errors leak
+      // local paths/preamble to the renderer.
+      throw new Error(normalizeGitErrorMessage(error, 'upstream'))
+    }
   }
 
   private async forkSync(params: Record<string, unknown>, context?: RequestContext) {

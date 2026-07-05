@@ -554,6 +554,10 @@ export function promptGuardGitEnv(env: NodeJS.ProcessEnv = process.env): NodeJS.
       GIT_TERMINAL_PROMPT: '0',
       GIT_ASKPASS: env.GIT_ASKPASS ?? '',
       SSH_ASKPASS: env.SSH_ASKPASS ?? '',
+      // Why: consumers string-match git output (clone failures, remote-error
+      // classification). Localized messages break that, so pin to C — same
+      // guarantee the relay env gives the SSH path.
+      LC_ALL: 'C',
       // Why: Git Credential Manager ignores GIT_TERMINAL_PROMPT / GIT_ASKPASS and
       // pops a GUI on first auth — the Windows worktree-create hang (STA-1292).
       // `never` suppresses the prompt while still serving cached credentials.

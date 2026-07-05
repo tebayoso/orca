@@ -3,7 +3,9 @@ import type { LocalGitExecOptions, OwnerRepo } from './gh-utils'
 // prettier-ignore
 import { ghExecFileAsync, acquire, release, resolveIssueSource, ghRepoExecOptions, githubRepoContext } from './gh-utils'
 
-const VALID_SLUG_SEGMENT = /^[A-Za-z0-9_.-]+$/
+// Why: segments are interpolated into gh API paths — reject `.`/`..` so a
+// crafted slug cannot resolve to a different route.
+const VALID_SLUG_SEGMENT = /^(?!\.{1,2}$)[A-Za-z0-9_.-]+$/
 
 /**
  * Highest permission the authenticated viewer holds on the repo that issue
@@ -44,13 +46,19 @@ export async function getViewerRepoPermission(
       permissions?: { admin?: boolean; maintain?: boolean; push?: boolean; triage?: boolean }
     }
     const flags = data.permissions
-    const permission: GitHubViewerRepoPermission = flags?.admin
+    // Why: `permissions` is absent in some auth contexts (e.g. app tokens).
+    // That's an unknown, not read-only — treat it like a failed probe so
+    // callers fail open instead of hiding write controls.
+    if (!flags) {
+      return null
+    }
+    const permission: GitHubViewerRepoPermission = flags.admin
       ? 'admin'
-      : flags?.maintain
+      : flags.maintain
         ? 'maintain'
-        : flags?.push
+        : flags.push
           ? 'write'
-          : flags?.triage
+          : flags.triage
             ? 'triage'
             : 'read'
     return { permission, source: ownerRepo }

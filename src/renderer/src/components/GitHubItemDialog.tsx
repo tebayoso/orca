@@ -3182,7 +3182,9 @@ function ConversationTab({
   const bodyViewerLogin = useGitHubViewerLogin(getTaskSourceRuntimeSettings(sourceContext))
   const permissionAllowsBodyEdit =
     bodyViewerPermission.data !== 'read' ||
-    (bodyViewerLogin !== null && item.author !== null && item.author === bodyViewerLogin)
+    (bodyViewerLogin !== null &&
+      item.author !== null &&
+      item.author.toLowerCase() === bodyViewerLogin.toLowerCase())
   const canEditBody =
     permissionAllowsBodyEdit &&
     (item.type === 'pr'
@@ -3892,7 +3894,12 @@ function PRActionsPanel({
   const viewerLogin = useGitHubViewerLogin(sourceSettings)
   const readOnly = viewerPermission.data === 'read'
   const permissionBlocksState =
-    readOnly && !(viewerLogin !== null && item.author !== null && item.author === viewerLogin)
+    readOnly &&
+    !(
+      viewerLogin !== null &&
+      item.author !== null &&
+      item.author.toLowerCase() === viewerLogin.toLowerCase()
+    )
   const canMutateWithRepoContext =
     !!repoPath || !!projectOrigin || mergeTarget.kind === 'environment'
   const canMutateState =
@@ -5703,7 +5710,10 @@ function GHEditSection({
   const viewerLogin = useGitHubViewerLogin(sourceSettings)
   const readOnly = viewerPermission.data === 'read'
   const canMutateStatus =
-    !readOnly || (viewerLogin !== null && item.author !== null && item.author === viewerLogin)
+    !readOnly ||
+    (viewerLogin !== null &&
+      item.author !== null &&
+      item.author.toLowerCase() === viewerLogin.toLowerCase())
   const hasAttachedWorkspace =
     attachedWorkspaceLabel !== null && attachedWorkspaceLabel !== undefined
   const filteredDuplicateCandidates = useMemo(

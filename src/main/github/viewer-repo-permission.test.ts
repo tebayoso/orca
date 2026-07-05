@@ -88,6 +88,21 @@ describe('getViewerRepoPermission', () => {
     expect(
       await getViewerRepoPermission('/repo', 'auto', null, {}, { owner: 'a/b', repo: 'c' })
     ).toBeNull()
+    expect(
+      await getViewerRepoPermission('/repo', 'auto', null, {}, { owner: '..', repo: 'orca' })
+    ).toBeNull()
+    expect(
+      await getViewerRepoPermission('/repo', 'auto', null, {}, { owner: 'stablyai', repo: '.' })
+    ).toBeNull()
     expect(ghExecFileAsyncMock).not.toHaveBeenCalled()
+  })
+
+  // Why: `permissions` is absent in some auth contexts (app tokens). That's
+  // an unknown — mapping it to 'read' would hide write controls, so it must
+  // behave like a failed probe (null, callers fail open).
+  it('returns null when the payload has no permissions object', async () => {
+    ghExecFileAsyncMock.mockResolvedValue({ stdout: JSON.stringify({ full_name: 'x/y' }) })
+
+    expect(await getViewerRepoPermission('/repo', 'auto')).toBeNull()
   })
 })

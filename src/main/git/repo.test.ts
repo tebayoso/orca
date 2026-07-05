@@ -109,7 +109,10 @@ describe('searchBaseRefs (widened glob)', () => {
   })
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true })
+    // Why: machine-level git daemons (e.g. trace2 writers) can drop files
+    // into the fixture repo between the last git call and cleanup —
+    // retry so the sweep wins the race instead of failing ENOTEMPTY.
+    rmSync(tmpDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
   })
 
   it('returns upstream/* branches when querying a non-origin remote', async () => {
@@ -470,7 +473,10 @@ describe('getDefaultBaseRef (regression — unchanged behavior)', () => {
   })
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true })
+    // Why: machine-level git daemons (e.g. trace2 writers) can drop files
+    // into the fixture repo between the last git call and cleanup —
+    // retry so the sweep wins the race instead of failing ENOTEMPTY.
+    rmSync(tmpDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
   })
 
   it('returns origin/main when both origin/main and upstream/main exist (origin wins)', () => {
@@ -517,7 +523,10 @@ describe('getRemoteCount', () => {
   })
 
   afterEach(() => {
-    rmSync(tmpDir, { recursive: true, force: true })
+    // Why: machine-level git daemons (e.g. trace2 writers) can drop files
+    // into the fixture repo between the last git call and cleanup —
+    // retry so the sweep wins the race instead of failing ENOTEMPTY.
+    rmSync(tmpDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
   })
 
   it('returns 0 for a repo with no remotes', async () => {

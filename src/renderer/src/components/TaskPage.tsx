@@ -1097,7 +1097,9 @@ function GHStatusCell({
   const viewerLogin = useGitHubViewerLogin(sourceSettings)
   const canMutateStatus =
     viewerPermission.data !== 'read' ||
-    (viewerLogin !== null && item.author !== null && item.author === viewerLogin)
+    (viewerLogin !== null &&
+      item.author !== null &&
+      item.author.toLowerCase() === viewerLogin.toLowerCase())
   const filteredDuplicateCandidates = useMemo(
     () =>
       getTaskPageGitHubDuplicateCandidates(duplicateIssueCandidates, item.number, duplicateSearch),

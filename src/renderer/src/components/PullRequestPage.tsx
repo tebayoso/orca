@@ -5877,7 +5877,10 @@ function GHEditSection({
   const viewerLogin = useGitHubViewerLogin(sourceSettings)
   const readOnly = viewerPermission.data === 'read'
   const canMutateState =
-    !readOnly || (viewerLogin !== null && item.author !== null && item.author === viewerLogin)
+    !readOnly ||
+    (viewerLogin !== null &&
+      item.author !== null &&
+      item.author.toLowerCase() === viewerLogin.toLowerCase())
 
   // Why: sync local assignees when item changes or when the detail fetch
   // resolves with real data — but skip if the user already made an

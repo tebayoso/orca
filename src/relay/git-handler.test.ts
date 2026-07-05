@@ -116,6 +116,7 @@ describe('GitHandler', () => {
     expect(methods).toContain('git.upstreamStatus')
     expect(methods).toContain('git.fetch')
     expect(methods).toContain('git.forkSync')
+    expect(methods).toContain('git.addUpstreamRemote')
     expect(methods).toContain('git.fetchRemoteTrackingRef')
     expect(methods).toContain('git.fetchGitLabMergeRequestHead')
     expect(methods).toContain('git.push')
@@ -1740,6 +1741,65 @@ describe('GitHandler', () => {
           { isStale: () => false, signal: controller.signal }
         )
       ).rejects.toThrow(/abort/i)
+    })
+
+    it('adds the upstream remote mirroring the origin transport and is idempotent', async () => {
+      gitInit(tmpDir)
+      execFileSync('git', ['remote', 'add', 'origin', 'https://github.com/tebayoso/orca.git'], {
+        cwd: tmpDir,
+        stdio: 'pipe'
+      })
+
+      const result = (await dispatcher.callRequest('git.addUpstreamRemote', {
+        worktreePath: tmpDir,
+        expectedUpstream: { owner: 'stablyai', repo: 'orca' }
+      })) as { ok: boolean; url?: string; alreadyExisted?: boolean }
+
+      expect(result).toEqual({
+        ok: true,
+        url: 'https://github.com/stablyai/orca.git',
+        alreadyExisted: false
+      })
+      const upstreamUrl = execFileSync('git', ['remote', 'get-url', 'upstream'], {
+        cwd: tmpDir,
+        encoding: 'utf-8',
+        stdio: 'pipe'
+      }).trim()
+      expect(upstreamUrl).toBe('https://github.com/stablyai/orca.git')
+
+      const again = (await dispatcher.callRequest('git.addUpstreamRemote', {
+        worktreePath: tmpDir,
+        expectedUpstream: { owner: 'stablyai', repo: 'orca' }
+      })) as { ok: boolean; alreadyExisted?: boolean }
+      expect(again).toMatchObject({ ok: true, alreadyExisted: true })
+    })
+
+    it('refuses to overwrite an existing upstream remote pointing elsewhere', async () => {
+      gitInit(tmpDir)
+      execFileSync('git', ['remote', 'add', 'origin', 'https://github.com/tebayoso/orca.git'], {
+        cwd: tmpDir,
+        stdio: 'pipe'
+      })
+      execFileSync('git', ['remote', 'add', 'upstream', 'https://github.com/someone/else.git'], {
+        cwd: tmpDir,
+        stdio: 'pipe'
+      })
+
+      const result = (await dispatcher.callRequest('git.addUpstreamRemote', {
+        worktreePath: tmpDir,
+        expectedUpstream: { owner: 'stablyai', repo: 'orca' }
+      })) as { ok: boolean; reason?: string }
+
+      expect(result).toEqual({ ok: false, reason: 'upstream-exists-mismatch' })
+    })
+
+    it('rejects malformed add-upstream expected upstream metadata', async () => {
+      await expect(
+        dispatcher.callRequest('git.addUpstreamRemote', {
+          worktreePath: tmpDir,
+          expectedUpstream: { owner: '   ', repo: 'orca' }
+        })
+      ).rejects.toThrow('Invalid expected upstream.')
     })
 
     it('refreshes one remote-tracking ref from a configured remote', async () => {
