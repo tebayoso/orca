@@ -53,7 +53,9 @@ export default function TasksPane({ worktreeId, isActive }: TasksPaneProps): Rea
   }
 
   return (
-    <div className="h-full min-h-0 overflow-hidden bg-background">
+    // Why: data marker lets useModalReturnFocus route focus back into this
+    // pane after a modal closes (mirrors data-orca-emulator-frame).
+    <div className="h-full min-h-0 overflow-hidden bg-background" data-orca-tasks-pane="true">
       <Suspense fallback={<div className="h-full min-h-0 bg-background" />}>
         <TaskPage embed={embed} />
       </Suspense>

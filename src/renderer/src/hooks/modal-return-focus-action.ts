@@ -17,6 +17,7 @@ export type ModalReturnFocusAction =
   | { kind: 'terminal'; tabId: string; leafId: string | null }
   | { kind: 'editor' }
   | { kind: 'simulator' }
+  | { kind: 'tasks' }
   | { kind: 'surface' }
   | { kind: 'none' }
 
@@ -40,6 +41,12 @@ export function resolveModalReturnFocusAction(
   }
   if (captured.tabType === 'simulator' && captured.worktreeId) {
     return { kind: 'simulator' }
+  }
+  // Why: tasks panes are self-contained like the simulator — falling through
+  // to 'surface' would focus a hidden xterm/editor textarea instead of
+  // returning focus to the tasks pane.
+  if (captured.tabType === 'tasks' && captured.worktreeId) {
+    return { kind: 'tasks' }
   }
   if (captured.worktreeId) {
     return { kind: 'surface' }

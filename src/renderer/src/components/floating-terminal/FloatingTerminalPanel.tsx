@@ -278,14 +278,16 @@ export function FloatingTerminalPanel({
     activeTab &&
     activeTab.contentType !== 'terminal' &&
     activeTab.contentType !== 'browser' &&
-    activeTab.contentType !== 'simulator'
+    activeTab.contentType !== 'simulator' &&
+    activeTab.contentType !== 'tasks'
       ? activeTab.id
       : null
   const activeEditorFileId =
     activeTab &&
     activeTab.contentType !== 'terminal' &&
     activeTab.contentType !== 'browser' &&
-    activeTab.contentType !== 'simulator'
+    activeTab.contentType !== 'simulator' &&
+    activeTab.contentType !== 'tasks'
       ? activeTab.entityId
       : null
   const terminalTabById = useMemo(() => new Map(tabs.map((tab) => [tab.id, tab])), [tabs])
@@ -339,7 +341,8 @@ export function FloatingTerminalPanel({
           (tab) =>
             tab.contentType !== 'terminal' &&
             tab.contentType !== 'browser' &&
-            tab.contentType !== 'simulator'
+            tab.contentType !== 'simulator' &&
+            tab.contentType !== 'tasks'
         )
         .map((tab) => {
           const file = floatingFiles.find((candidate) => candidate.id === tab.entityId)
@@ -873,9 +876,10 @@ export function FloatingTerminalPanel({
           (tab) =>
             tab.contentType !== 'terminal' &&
             tab.contentType !== 'browser' &&
-            // Why: simulator tabs are not files; "Close All Files" must leave
-            // the Mobile Emulator open like terminal/browser tabs do.
+            // Why: simulator and tasks tabs are not files; "Close All Files"
+            // must leave them open like terminal/browser tabs.
             tab.contentType !== 'simulator' &&
+            tab.contentType !== 'tasks' &&
             !tab.isPinned
         )
         .map((tab) => tab.id)

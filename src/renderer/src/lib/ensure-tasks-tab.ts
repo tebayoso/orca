@@ -1,3 +1,4 @@
+import type { AppState } from '@/store'
 import { useAppStore } from '@/store'
 import { translate } from '@/i18n/i18n'
 import { isGitRepoKind } from '../../../shared/repo-kind'
@@ -18,12 +19,18 @@ export function getTasksTabForWorktree(worktreeId: string): ExistingTasksTab | n
 }
 
 /** Tasks are provider work items fetched per repo, so the tab only makes
- *  sense when the worktree resolves to a git-backed repo. */
-export function worktreeSupportsTasksTab(worktreeId: string): boolean {
-  const store = useAppStore.getState()
+ *  sense when the worktree resolves to a git-backed repo.
+ *
+ *  Pass `state` when calling from inside a zustand selector so the check
+ *  reads the subscribed snapshot (stays reactive) instead of `getState()`.
+ *  Optional access: partial store mocks in tests omit lookup actions. */
+export function worktreeSupportsTasksTab(
+  worktreeId: string,
+  state: Pick<AppState, 'getKnownWorktreeById' | 'repos'> = useAppStore.getState()
+): boolean {
   const repoId =
-    store.getKnownWorktreeById(worktreeId)?.repoId ?? getRepoIdFromWorktreeId(worktreeId)
-  const repo = store.repos.find((candidate) => candidate.id === repoId)
+    state.getKnownWorktreeById?.(worktreeId)?.repoId ?? getRepoIdFromWorktreeId(worktreeId)
+  const repo = (state.repos ?? []).find((candidate) => candidate.id === repoId)
   return Boolean(repo && isGitRepoKind(repo))
 }
 

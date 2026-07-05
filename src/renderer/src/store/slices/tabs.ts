@@ -1901,6 +1901,8 @@ export const createTabsSlice: StateCreator<AppState, [], [], TabsSlice> = (set, 
       if (tab.contentType === 'browser') {
         return liveBrowserIds.has(tab.entityId)
       }
+      // Why: simulator and tasks panes have no runtime/file liveness set to
+      // check (unlike terminal/browser/editor); their tab is always renderable.
       if (tab.contentType === 'simulator' || tab.contentType === 'tasks') {
         return true
       }

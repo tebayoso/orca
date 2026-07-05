@@ -27,9 +27,7 @@ import { closeTerminalTab } from '../terminal/terminal-tab-actions'
 import { openTabBarEntry, type TabCreateEntryArgs } from '../tab-bar/tab-create-entry-action'
 import { openMobileEmulatorTab } from '@/lib/open-mobile-emulator-tab'
 import { ensureSimulatorTab, getSimulatorTabForWorktree } from '@/lib/ensure-simulator-tab'
-import { ensureTasksTab } from '@/lib/ensure-tasks-tab'
-import { isGitRepoKind } from '../../../../shared/repo-kind'
-import { getRepoIdFromWorktreeId } from '../../../../shared/worktree-id'
+import { ensureTasksTab, worktreeSupportsTasksTab } from '@/lib/ensure-tasks-tab'
 import { buildDuplicatedBrowserTabOptions } from '@/lib/duplicate-browser-tab-options'
 import { getRuntimeEnvironmentIdForWorktree } from '@/lib/worktree-runtime-owner'
 import { browserWorkspaceHasRemoteOwner } from '@/runtime/remote-browser-tab-ownership'
@@ -77,13 +75,9 @@ export function useTabGroupWorkspaceModel({
       terminalLayoutsByTabId: state.terminalLayoutsByTabId ?? EMPTY_TERMINAL_LAYOUTS_BY_TAB_ID,
       generatedTabTitlesEnabled: state.settings?.tabAutoGenerateTitle === true,
       mobileEmulatorEnabled: state.settings?.mobileEmulatorEnabled !== false,
-      supportsTasksTab: (() => {
-        // Optional call: partial store mocks in tests omit lookup actions.
-        const repoId =
-          state.getKnownWorktreeById?.(worktreeId)?.repoId ?? getRepoIdFromWorktreeId(worktreeId)
-        const repo = (state.repos ?? []).find((candidate) => candidate.id === repoId)
-        return Boolean(repo && isGitRepoKind(repo))
-      })()
+      // Why: pass the selector's subscribed snapshot so the check re-derives
+      // when repos resolve, instead of a non-reactive getState() read.
+      supportsTasksTab: worktreeSupportsTasksTab(worktreeId, state)
     }))
   )
 

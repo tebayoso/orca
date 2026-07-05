@@ -170,9 +170,11 @@ export function buildTabCreateMenuOptions(
   }
 
   if (context.hasTasks) {
+    // Why: reuse TabBar.tsx's keys so the same English label can't diverge
+    // across locales between the tab strip and this menu (simulator precedent).
     const label = context.tasksIsGoTo
-      ? translate('auto.components.tab.bar.tab.create.menu.options.f85ebdaa83', 'Go to Tasks')
-      : translate('auto.components.tab.bar.tab.create.menu.options.1d70a382e6', 'Tasks')
+      ? translate('auto.components.tab.bar.TabBar.46c2430d7f', 'Go to Tasks')
+      : translate('auto.components.tab.bar.TabBar.1926ee1252', 'Tasks')
     options.push({
       id: context.tasksIsGoTo ? 'go-to-tasks' : 'new-tasks',
       kind: context.tasksIsGoTo ? 'go-to-tasks' : 'new-tasks',
