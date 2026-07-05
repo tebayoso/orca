@@ -1,0 +1,42 @@
+src/renderer/src/lib/ensure-tasks-tab.ts
+  s_eeceb437e86f12::t_a4992eebe37387 22-30,32-33
+  s_eeceb437e86f12::t_2676e2d569628f 1
+src/renderer/src/components/tab-group/useTabGroupWorkspaceModel.ts
+  s_eeceb437e86f12::t_78ac9598cec243 78-80
+  s_eeceb437e86f12::t_693e3ffb5e5051 30
+src/renderer/src/components/tasks-pane/TasksPane.tsx
+  s_eeceb437e86f12::t_fb4255f4c5fedb 56-58
+src/renderer/src/hooks/modal-return-focus-action.test.ts
+  s_eeceb437e86f12::t_3fe1d9a38fd358 75-89
+src/renderer/src/components/floating-terminal/FloatingTerminalPanel.test.tsx
+  s_eeceb437e86f12::t_cd6a7a4dcc6b46 2310-2367
+src/renderer/src/store/slices/tabs.ts
+  s_eeceb437e86f12::t_50c6a9cc034f4c 1904-1905
+src/renderer/src/hooks/modal-return-focus-action.ts
+  s_eeceb437e86f12::t_2a5297336a6ec8 20
+  s_eeceb437e86f12::t_538d2b9c070554 45-50
+src/renderer/src/components/floating-terminal/FloatingTerminalPanel.tsx
+  s_eeceb437e86f12::t_32201e999836f1 281-282,289-290,344-345,879-880,882
+src/renderer/src/components/tab-bar/tab-create-menu-options.ts
+  s_eeceb437e86f12::t_33ad439dc6823c 173-174,176-177
+src/renderer/src/hooks/useModalReturnFocus.ts
+  s_eeceb437e86f12::t_382412d785dd48 104-113
+  s_eeceb437e86f12::t_522f173b57122e 198
+  s_eeceb437e86f12::t_42851ca448e277 182-183
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "65cf720d93c0039f9f3054ffcc05767080395181",
+  "prompts": {},
+  "sessions": {
+    "s_eeceb437e86f12": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c365b596-f058-461f-a39d-6d8d24513d86",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
