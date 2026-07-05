@@ -2029,7 +2029,7 @@
           "13b3ac0a84": "状态",
           "79c54552f7": "筛选条件",
           "8a2ffbf9b3": "删除 {{value0}} 筛选条件",
-          "19bb6f115f": "reviewed-by"
+          "19bb6f115f": "已审查"
         },
         "PRFilterPickers": {
           "fdf387297c": "清除 （",
@@ -2467,7 +2467,6 @@
             "0a917b591a": "粘贴",
             "f3eeb1de13": "复制",
             "c2f0b72b8d": "插入",
-            "openLinkDefaultBrowser": "在默认浏览器中打开",
             "925f49f210": "展开窗格",
             "df766809e0": "折叠窗格",
             "cff67afad1": "复制上下文"
@@ -4896,7 +4895,8 @@
           "d420c43729": "将 {{value0}} cookie 从 {{value1}}{{value2}} 导入到 {{value3}} 中。",
           "b4c167764d": "已从文件将 {{value0}} 个 Cookie 导入到 {{value1}}。",
           "a3f8c2d1e0b4": "已从 {{value1}} ({{value2}}) 导入 {{value0}} 个 Cookie 到 {{value3}}。",
-          "b4e9d3f2a1c5": "已从 {{value1}} 导入 {{value0}} 个 Cookie 到 {{value2}}。"
+          "b4e9d3f2a1c5": "已从 {{value1}} 导入 {{value0}} 个 Cookie 到 {{value2}}。",
+          "c5a273a809": "从 {{value0}}"
         },
         "BrowserUseComputerUseNotice": {
           "15b5e680ba": "开放计算机使用",
@@ -4920,7 +4920,7 @@
           "be6df68384": "从文件...",
           "e44c5d681e": "从",
           "67d9a53f47": "管理单独登录的配置文件",
-          "112f70adc4": "上次导入自",
+          "112f70adc4": "上次导入自 {{value0}}",
           "72d4815523": "将您现有的登录信息带入 Orca，以便智能体可以访问经过身份验证的页面。导入到默认配置文件中。",
           "2eb906706c": "导入浏览器 Cookie",
           "af8c83ed61": "从 Chrome、Edge 或其他浏览器导入 cookie，以便智能体可以重复使用您的登录信息。",
@@ -4942,7 +4942,8 @@
           "ad8cb0ee22": "修复路径",
           "0289434ed6": "启用",
           "8b3054dac7": "注册...",
-          "8f2675c2f3": "已从文件导入 {{value0}} 个 Cookie。"
+          "8f2675c2f3": "已从文件导入 {{value0}} 个 Cookie。",
+          "5301857d88": "从 {{value0}}"
         },
         "BrowserUseSkillStep": {
           "0871b6998d": "使智能体能够在 Orca 浏览器中导航和验证页面。",
@@ -5182,7 +5183,7 @@
           "bf16ef0af2": "关闭",
           "3f6892f307": "开启",
           "b82f86d7d2": "Rich Markdown Spellcheck",
-          "5195f0b9ef": "Show browser spelling underlines and suggestions while editing rich Markdown."
+          "5195f0b9ef": "在编辑富 Markdown 时显示浏览器拼写下划线和建议。"
         },
         "AdvancedNetworkSettingsSection": {
           "3e431564b5": "本地主机，127.0.0.1，*.internal",
@@ -7437,7 +7438,7 @@
             "defaultProjectRuntime": "默认项目运行时",
             "defaultProjectRuntimeDescription": "选择本地 Windows 项目继承的运行时。",
             "d2d2d929c0": "Rich Markdown Spellcheck",
-            "4497e2e2bb": "Show browser spelling underlines and suggestions while editing rich Markdown."
+            "4497e2e2bb": "在编辑富 Markdown 时显示浏览器拼写下划线和建议。"
           }
         },
         "git": {
@@ -8210,7 +8211,7 @@
               "keyword_warp": "warp",
               "keyword_themes": "themes",
               "keyword_yaml": "yaml",
-              "keyword_legacy_title": "Import themes from Warp"
+              "keyword_legacy_title": "从 Warp 导入主题"
             },
             "yaml_import": {
               "title": "从 YAML 导入",
@@ -9822,10 +9823,6 @@
             "a84d5677ff": "OpenCode",
             "2528586aa7": "克劳迪诺"
           }
-        },
-        "PetOverlay": {
-          "de932b0e8f": "@keyframes pet-bob { 0%,100% { 变换：translateY(0); } 50% { 变换：translateY(-4px); } }",
-          "4712d196c6": "@keyframes pet-{{value0}} { from { 背景位置：{{value1}}px {{value2}}px; } 到 { 背景位置：{{value3}}px {{value4}}px; } }"
         }
       },
       "onboarding": {
