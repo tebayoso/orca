@@ -1,0 +1,25 @@
+src/relay/relay-command-env.ts
+  s_75663f70980b93::t_a8fb2317c0ca8b 3
+  s_75663f70980b93::t_72eebed183fc29 157-160
+src/main/git/runner.ts
+  s_75663f70980b93::t_69b7b0432913c8 554-559
+  s_75663f70980b93::t_9bac982947db97 29
+src/shared/english-message-locale-env.ts
+  s_75663f70980b93::t_50fbfde68d3cfb 1-23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "30706b582d5c7dd1d9c6e33d83df81539bf1ad6c",
+  "prompts": {},
+  "sessions": {
+    "s_75663f70980b93": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "37592764-01e2-4af0-96e8-6e59d3358847",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
