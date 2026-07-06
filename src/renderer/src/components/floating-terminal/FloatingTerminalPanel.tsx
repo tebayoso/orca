@@ -1588,9 +1588,6 @@ export function FloatingTerminalPanel({
               </div>
             )
           })}
-          {/* Why: tasks tabs participate in the floating tab strip (restored/
-              synced sessions can carry them), so they need a content branch —
-              without one an activated tasks tab renders a blank body. */}
           {tasksItems.map((tab) => {
             const isActive = tab.id === activeTab?.id
             return (

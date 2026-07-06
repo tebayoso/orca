@@ -4198,9 +4198,9 @@ export default function TaskPage({
     },
     [addingUpstreamRepoIds, handleRefreshGithubTasks]
   )
-  // Why: `issues_disabled` is a repo *setting*, not a transient failure —
-  // Retry can never fix it. Offer enabling the feature instead (common on
-  // fresh forks, which inherit issues turned off) and refetch on success.
+  // Why: `issues_disabled` is a repo *setting* (common on fresh forks, which
+  // inherit issues turned off) — offer enabling it alongside Retry. The PATCH
+  // is admin-only, so non-admins recover via Retry once an admin flips it.
   const [enablingIssuesSourceKeys, setEnablingIssuesSourceKeys] = useState<ReadonlySet<string>>(
     new Set()
   )
@@ -9339,10 +9339,6 @@ export default function TaskPage({
                               )}
                             </Button>
                           ) : null}
-                          {/* Why: Retry stays available even for issues_disabled —
-                              Enable issues is an admin-only PATCH, so non-admin
-                              viewers need a recovery path after an admin flips
-                              the setting on GitHub. */}
                           <Button
                             variant="outline"
                             size="sm"

@@ -552,10 +552,8 @@ export function promptGuardGitEnv(env: NodeJS.ProcessEnv = process.env): NodeJS.
   return appendGitConfigEnv(
     {
       // Why: consumers string-match git output (clone failures, remote-error
-      // classification). Localized messages break that, so pin messages to C
-      // — same guarantee the relay env gives the SSH path. Messages only:
-      // LC_ALL=C would also force ASCII onto user git hooks (see
-      // withEnglishMessageLocale).
+      // classification). Localized messages break that — same guarantee the
+      // relay env gives the SSH path.
       ...withEnglishMessageLocale(env),
       GIT_TERMINAL_PROMPT: '0',
       GIT_ASKPASS: env.GIT_ASKPASS ?? '',

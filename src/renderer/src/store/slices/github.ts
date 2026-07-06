@@ -879,15 +879,20 @@ function matchesRepoCacheKey(key: string, prefixes: readonly string[]): boolean 
   if (prefixes.some((prefix) => key.startsWith(prefix))) {
     return true
   }
-  // Why: anchor the scoped match to the segment right after the scope — an
-  // unanchored `includes` would also hit `::{repoId}::` appearing inside the
-  // free-text query segment of another repo's key and evict that repo too.
+  // Why: keys embed free-text query segments, so match only the segment right
+  // after the scope — substring-searching the whole key would cross-match.
   const scopeSeparator = key.indexOf('::')
   if (scopeSeparator === -1) {
     return false
   }
   const afterScope = key.slice(scopeSeparator + 2)
   return prefixes.some((prefix) => afterScope.startsWith(prefix))
+}
+
+// Why: source flips stale entries with `fetchedAt: 0` instead of deleting them
+// so the list keeps rendering while the forced refetch is in flight.
+function isStaleMarkedEntry(entry: CacheEntry<unknown> | undefined): boolean {
+  return entry?.fetchedAt === 0
 }
 
 function clearInflightWorkItemsForRepo(repoId: string, repoPath?: string): void {
@@ -2643,10 +2648,8 @@ export const createGitHubSlice: StateCreator<AppState, [], [], GitHubSlice> = (s
         // wrongness introduced by the issue-source split in #1076; PR-side
         // failures existed before and are out of scope for this banner.
         const issuesError = envelope.errors?.issues
-        // Why: mixed-mode errors carry the failing side's slug on the error
-        // itself (sources.issues reports the auto-primary side, which may not
-        // be the one that failed). Fall back to sources.issues for
-        // single-source lists.
+        // Why: mixed-mode errors carry the failing side's slug; sources.issues
+        // reports the auto-primary side, which may not be the one that failed.
         const issuesErrorSource = issuesError?.source ?? envelope.sources.issues
         // Why: if the main process resolved `errors.issues` but no source slug,
         // the renderer has no slug to render in the banner copy, so the error is
@@ -2695,12 +2698,9 @@ export const createGitHubSlice: StateCreator<AppState, [], [], GitHubSlice> = (s
         if (!isGitHubWorkItemsSshRemoteRequiredError(err)) {
           console.error('Failed to fetch GitHub work items:', err)
         }
-        // Why: fetchedAt 0 marks a flip-staled entry (see
-        // setIssueSourcePreference) whose data belongs to the OLD source.
-        // Stale-while-revalidate is only safe when the revalidate lands; on
-        // failure, drop the entry so the wrong repo's items are never
-        // rendered under the newly selected source.
-        if (get().workItemsCache[key]?.fetchedAt === 0) {
+        // Why: stale-while-revalidate is only safe when the revalidate lands —
+        // on failure, drop the entry so the old source's items can't render.
+        if (isStaleMarkedEntry(get().workItemsCache[key])) {
           set((s) => {
             const next = { ...s.workItemsCache }
             delete next[key]

@@ -1404,10 +1404,8 @@ async function listMixedWorkItems(
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
     .slice(0, limit)
 
-  // Why: stamp the failing side's slug onto the error — `sources.issues`
-  // below reports the upstream (auto-primary) slug, so without this an
-  // origin-side failure would be attributed to upstream and the banner's
-  // Enable-issues action would PATCH the wrong repository.
+  // Why: `sources.issues` below reports the auto-primary (upstream) slug,
+  // which is not necessarily the side that failed — the error carries its own.
   const issuesError = originResult.errors?.issues
     ? { ...originResult.errors.issues, source: originResult.sources.issues ?? origin }
     : upstreamResult.errors?.issues
@@ -1553,11 +1551,8 @@ export async function countWorkItems(
   const parsedQuery = trimmedQuery ? parseTaskQuery(trimmedQuery) : null
   const effectiveQuery = parsedQuery ?? defaultOpenWorkItemQuery()
 
-  // Why: 'mixed' lists issues AND PRs from both remotes (listMixedWorkItems),
-  // so the count must sum the full query against each repo — the split
-  // issue-half/PR-half logic below would undercount and truncate pagination.
-  // Mirrors listMixedWorkItems' degradation: without two distinct remotes,
-  // fall through to the single-source paths.
+  // Why: mirror listMixedWorkItems — 'mixed' merges the full query from both
+  // remotes, degrading to the single-source paths without two distinct ones.
   const mixedTargets =
     preference === 'mixed' &&
     prResolved.originCandidate &&

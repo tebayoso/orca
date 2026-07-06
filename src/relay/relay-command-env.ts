@@ -153,9 +153,7 @@ export function buildRelayCommandEnv(
   return {
     // Why: relay consumers string-match subprocess output (git divergence
     // hints, "nothing to commit", preflight banners). Localized messages
-    // (e.g. Spanish git) break that matching, so pin messages to C.
-    // Messages only: LC_ALL=C would also force ASCII onto user git hooks
-    // (see withEnglishMessageLocale).
+    // (e.g. Spanish git) break that matching.
     ...withEnglishMessageLocale(baseEnv),
     [key]: [...segments].join(delimiter)
   }

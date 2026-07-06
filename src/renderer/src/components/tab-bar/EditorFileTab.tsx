@@ -65,9 +65,8 @@ export default function EditorFileTab({
 }): React.JSX.Element {
   const worktree = useWorktreeById(file.worktreeId)
   const repo = useRepoById(worktree?.repoId ?? null)
-  // Why: tasks tabs reuse this chrome with a synthetic label path ("Tasks").
-  // Dispatch on the synthetic language marker, not the filename — a real
-  // project file named `tasks` must keep its generic file icon.
+  // Why: dispatch on the tasks tab's synthetic language marker, not its label
+  // path — a real project file named `tasks` must keep its generic icon.
   const FileIcon = file.language === 'tasks' ? List : getFileTypeIcon(file.filePath)
   // Why: no transform/transition/isDragging styling — the drag design is
   // that tabs stay visually anchored; only the blue insertion bar moves.
