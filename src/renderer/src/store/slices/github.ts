@@ -873,9 +873,7 @@ function repoCacheKeyPrefixes(repoId: string, repoPath?: string): string[] {
 
 function matchesRepoCacheKey(key: string, prefixes: readonly string[]): boolean {
   // Why: work-items cache keys optionally carry a host/source scope segment
-  // in front (`{scope}::{repoId}::…`, see workItemsCacheKey). Prefix-only
-  // matching missed those, so issue-source preference flips evicted nothing
-  // for host-scoped repos and the refetch served the old source from cache.
+  // in front (`{scope}::{repoId}::…`, see workItemsCacheKey) — match both shapes.
   if (prefixes.some((prefix) => key.startsWith(prefix))) {
     return true
   }
@@ -4274,25 +4272,18 @@ export const createGitHubSlice: StateCreator<AppState, [], [], GitHubSlice> = (s
     // first makes the "new fetch gets a fresh request" invariant impossible
     // to trip on later refactors that change zustand or React flush timing.
     clearInflightWorkItemsForRepo(repoId, repoPath)
-    // Why: invalidate AFTER the IPC resolves — invalidating before awaiting
-    // would let an overlapping fetch hit main with the pre-flip persisted
-    // preference and repopulate stale-source data. Entries are marked stale
-    // (fetchedAt: 0) rather than deleted: the nonce-triggered refetch runs
-    // with force anyway, and keeping `data` renderable gives the list
-    // stale-while-revalidate — deleting caused a visible empty/skeleton
-    // flash on every source flip. isFresh() fails for any non-forced reader,
-    // so the old source can never be served as current.
+    // Why: invalidate AFTER the IPC resolves, or an overlapping fetch could
+    // repopulate stale-source data under the pre-flip preference. Stale-mark
+    // rather than delete: deleting caused an empty/skeleton flash on every
+    // flip, while isFresh() already fails stale entries for non-forced readers.
     set((s) => {
       const prefixes = repoCacheKeyPrefixes(repoId, repoPath)
       const next: Record<string, CacheEntry<GitHubWorkItem[]>> = {}
       for (const [key, entry] of Object.entries(s.workItemsCache)) {
         next[key] = matchesRepoCacheKey(key, prefixes) ? { ...entry, fetchedAt: 0 } : entry
       }
-      // Why: bump the invalidation nonce so the Tasks list's fetch effect
-      // — which keys on `[selectedRepos, appliedTaskSearch, taskRefreshNonce,
-      // taskSource, workItemsInvalidationNonce]` — re-runs and re-populates
-      // the just-staled entries. Staling alone wouldn't trigger the effect
-      // because it doesn't depend on the cache.
+      // Why: the nonce re-runs the Tasks list's fetch effect to re-populate the
+      // just-staled entries — staling alone doesn't trigger it (no cache dep).
       return { workItemsCache: next, workItemsInvalidationNonce: s.workItemsInvalidationNonce + 1 }
     })
   },

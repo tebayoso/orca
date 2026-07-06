@@ -90,8 +90,7 @@ export function useGitHubViewerLogin(options?: GitHubMetadataOptions): string | 
 /**
  * Highest permission the viewer holds on the repo that issue mutations for
  * this repoPath/override would target. `null` data = unknown (fetch failed) —
- * callers must fail open and keep controls interactive, since hiding
- * affordances on a transient error would lock users out of their own repos.
+ * callers must fail open and keep controls interactive.
  */
 export function useRepoViewerPermission(
   repoPath: string | null,

@@ -11,6 +11,7 @@ import { mkdtempSync, mkdirSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { execFileSync } from 'node:child_process'
 import { MAX_RENDERED_DIFF_COMBINED_CHARACTERS } from '../shared/large-diff-render-limit'
+import { removeGitFixtureDir } from '../shared/git-fixture-cleanup'
 import {
   createMockDispatcher,
   gitInit,
@@ -63,7 +64,7 @@ describe('GitHandler', () => {
   })
 
   afterEach(async () => {
-    await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
+    await removeGitFixtureDir(tmpDir)
   })
 
   function currentBranch(cwd: string): string {
@@ -658,13 +659,7 @@ describe('GitHandler', () => {
     const extraDirs: string[] = []
 
     afterEach(async () => {
-      await Promise.all(
-        extraDirs
-          .splice(0)
-          .map((dir) =>
-            fs.rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
-          )
-      )
+      await Promise.all(extraDirs.splice(0).map((dir) => removeGitFixtureDir(dir)))
     })
 
     // Why: `git submodule add` against a local path is blocked since git 2.38
@@ -958,7 +953,7 @@ describe('GitHandler', () => {
         ).rejects.toThrow('outside the worktree')
         await expect(fs.access(outsideFile)).resolves.toBeUndefined()
       } finally {
-        await fs.rm(outsideDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
+        await removeGitFixtureDir(outsideDir)
       }
     })
 
@@ -986,7 +981,7 @@ describe('GitHandler', () => {
         await expect(fs.access(outsideFile)).resolves.toBeUndefined()
         await expect(fs.access(untrackedFile)).resolves.toBeUndefined()
       } finally {
-        await fs.rm(outsideDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
+        await removeGitFixtureDir(outsideDir)
       }
     })
   })
@@ -1565,7 +1560,7 @@ describe('GitHandler', () => {
         expect(result.ahead).toBe(0)
         expect(result.behind).toBe(2)
       } finally {
-        await fs.rm(bareDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
+        await removeGitFixtureDir(bareDir)
       }
     })
 
@@ -1625,7 +1620,7 @@ describe('GitHandler', () => {
         // remote was actually contacted (not just silently no-op'd).
         await expect(fs.access(path.join(tmpDir, '.git', 'FETCH_HEAD'))).resolves.toBeUndefined()
       } finally {
-        await fs.rm(bareDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
+        await removeGitFixtureDir(bareDir)
       }
     })
 
@@ -1655,7 +1650,7 @@ describe('GitHandler', () => {
 
         await expect(fs.access(path.join(tmpDir, '.git', 'FETCH_HEAD'))).resolves.toBeUndefined()
       } finally {
-        await fs.rm(bareDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
+        await removeGitFixtureDir(bareDir)
       }
     })
 
@@ -1702,13 +1697,8 @@ describe('GitHandler', () => {
 
         await expect(fs.readFile(path.join(tmpDir, 'remote.txt'), 'utf-8')).resolves.toBe('remote')
       } finally {
-        await fs.rm(bareDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
-        await fs.rm(producerParent, {
-          recursive: true,
-          force: true,
-          maxRetries: 10,
-          retryDelay: 50
-        })
+        await removeGitFixtureDir(bareDir)
+        await removeGitFixtureDir(producerParent)
       }
     })
 
@@ -1855,13 +1845,8 @@ describe('GitHandler', () => {
         }).trim()
         expect(actual).toBe(expected)
       } finally {
-        await fs.rm(bareDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
-        await fs.rm(producerParent, {
-          recursive: true,
-          force: true,
-          maxRetries: 10,
-          retryDelay: 50
-        })
+        await removeGitFixtureDir(bareDir)
+        await removeGitFixtureDir(producerParent)
       }
     })
 
@@ -1908,7 +1893,7 @@ describe('GitHandler', () => {
         }).trim()
         expect(actual).toBe(expected)
       } finally {
-        await fs.rm(bareDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
+        await removeGitFixtureDir(bareDir)
       }
     })
 
@@ -2075,12 +2060,7 @@ describe('GitHandler', () => {
 
           expect(result.map((worktree) => worktree.path)).toContain(realWorktreePath)
         } finally {
-          await fs.rm(worktreePath, {
-            recursive: true,
-            force: true,
-            maxRetries: 10,
-            retryDelay: 50
-          })
+          await removeGitFixtureDir(worktreePath)
         }
       }
     )

@@ -28,11 +28,9 @@ export type TaskPageSurface = {
 const EMPTY_PAGE_DATA: TaskPageData = {}
 
 /**
- * Why: the store's taskPageData/openTaskPage are window singletons —
- * openTaskPage flips activeView to 'tasks' and writes nav history. Embedded
- * tab instances (which stay mounted while hidden, several can coexist) must
- * keep all page state per-instance and never touch those store paths, or a
- * background tab would hijack the window and clobber the global view.
+ * Why: taskPageData/openTaskPage are window singletons (openTaskPage flips
+ * activeView and writes nav history). Embedded tab instances keep all page
+ * state per-instance, or a hidden background tab would hijack the window.
  */
 export function useTaskPageSurface(embed?: TaskPageEmbedContext): TaskPageSurface {
   const isEmbedded = embed !== undefined

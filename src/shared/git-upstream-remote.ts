@@ -17,13 +17,9 @@ export type GitAddUpstreamRemoteResult =
     }
 
 /**
- * Add an `upstream` remote pointing at the fork parent.
- *
- * Why: fork clones frequently lack an upstream remote, which blocks both
- * fork-sync (`missing-upstream`) and upstream issue-source resolution in the
- * tasks view. The transport mirrors origin's (SSH vs HTTPS) so existing
- * credentials keep working. Idempotent when upstream already matches the
- * expected slug; refuses to touch an upstream pointing elsewhere.
+ * Add an `upstream` remote pointing at the fork parent, mirroring origin's
+ * transport (SSH vs HTTPS) so existing credentials keep working. Idempotent
+ * when upstream already matches; refuses to touch one pointing elsewhere.
  */
 export async function addUpstreamRemote(
   runGit: GitForkSyncRunner,

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, rmSync } from 'node:fs'
+import { mkdtempSync } from 'node:fs'
+import { removeGitFixtureDirSync } from '../../shared/git-fixture-cleanup'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
@@ -109,10 +110,7 @@ describe('searchBaseRefs (widened glob)', () => {
   })
 
   afterEach(() => {
-    // Why: machine-level git daemons (e.g. trace2 writers) can drop files
-    // into the fixture repo between the last git call and cleanup —
-    // retry so the sweep wins the race instead of failing ENOTEMPTY.
-    rmSync(tmpDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
+    removeGitFixtureDirSync(tmpDir)
   })
 
   it('returns upstream/* branches when querying a non-origin remote', async () => {
@@ -473,10 +471,7 @@ describe('getDefaultBaseRef (regression — unchanged behavior)', () => {
   })
 
   afterEach(() => {
-    // Why: machine-level git daemons (e.g. trace2 writers) can drop files
-    // into the fixture repo between the last git call and cleanup —
-    // retry so the sweep wins the race instead of failing ENOTEMPTY.
-    rmSync(tmpDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
+    removeGitFixtureDirSync(tmpDir)
   })
 
   it('returns origin/main when both origin/main and upstream/main exist (origin wins)', () => {
@@ -523,10 +518,7 @@ describe('getRemoteCount', () => {
   })
 
   afterEach(() => {
-    // Why: machine-level git daemons (e.g. trace2 writers) can drop files
-    // into the fixture repo between the last git call and cleanup —
-    // retry so the sweep wins the race instead of failing ENOTEMPTY.
-    rmSync(tmpDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 50 })
+    removeGitFixtureDirSync(tmpDir)
   })
 
   it('returns 0 for a repo with no remotes', async () => {

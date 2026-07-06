@@ -1080,12 +1080,9 @@ function GHStatusCell({
   )
   const reqRef = useRef(0)
   const parsedIssueLink = useMemo(() => parseGitHubIssueOrPRLink(item.url), [item.url])
-  // Why: read-tier repos (typical for the upstream of a fork) reject state
-  // writes with 403s — fall back to the static badge instead of offering a
-  // doomed popover. The item's URL slug identifies the exact repo the write
-  // would hit (slug-routed updates win over repo-path routing below). Issue
-  // authors keep close/reopen on their own issues; unknown permission fails
-  // open.
+  // Why: read-tier repos reject state writes with 403s — fall back to the
+  // static badge. Probe the item's URL slug (slug-routed updates win over
+  // repo-path routing); authors keep close/reopen, unknown fails open.
   const viewerPermission = useRepoViewerPermission(
     repo?.path ?? null,
     repo?.id ?? null,
@@ -3954,11 +3951,9 @@ export default function TaskPage({
 
   const openGitHubDetailPage = useCallback(
     (item: GitHubWorkItem, initialTab: ItemDialogTab = 'conversation') => {
-      // Why: 'mixed' lists both fork remotes, but detail fetches and dialog
-      // mutations resolve against the type's primary source (issues →
-      // upstream, PRs → origin). Items listed from the non-primary remote
-      // must open in the browser — an in-app dialog would silently read and
-      // mutate the wrong repo's item with the same number.
+      // Why: detail fetches and dialog mutations resolve the type's primary
+      // source (issues → upstream, PRs → origin), so mixed-list items from
+      // the other remote must open in the browser instead.
       const dialogWouldResolveWrongRepo =
         (item.type === 'issue' && item.sourceRemote === 'origin') ||
         (item.type === 'pr' && item.sourceRemote === 'upstream')
@@ -8123,9 +8118,7 @@ export default function TaskPage({
                                   { taskSource: source.id },
                                   { recordTasksInteraction: false }
                                 )
-                                // Why: a tab-local source switch is scoped to
-                                // that tab; only the global page updates the
-                                // app-wide default.
+                                // Why: only the global page updates the app-wide default.
                                 if (!isEmbedded) {
                                   void updateSettings({ defaultTaskSource: source.id }).catch(
                                     () => {

@@ -547,10 +547,8 @@ function PRAssigneesPanel({
   )
   const repoAssigneesByPath = useRepoAssignees(repoPath, item.repoId, sourceSettings)
   const repoAssignees = slugOwner && slugRepo ? repoAssigneesBySlug : repoAssigneesByPath
-  // Why: read-tier repos reject assignee writes with 403s — fold the viewer
-  // permission into the existing repo-context gate (fail-open on unknown).
-  // Probe the PR's own repo (URL slug): the default probe resolves the issue
-  // source, which on forks is upstream while the write targets origin.
+  // Why: read-tier repos reject assignee writes with 403s (fail open on
+  // unknown). Probe the PR's own repo (URL slug), not the issue source.
   const prAssigneeViewerPermission = useRepoViewerPermission(
     repoPath,
     item.repoId ?? null,
@@ -3172,11 +3170,9 @@ function ConversationTab({
     () => (projectOrigin ? { owner: projectOrigin.owner, repo: projectOrigin.repo } : bodySlug),
     [bodySlug, projectOrigin]
   )
-  // Why: editing someone else's issue/PR body needs write access — read-tier
-  // viewers only keep the pencil on items they authored (GitHub semantics).
-  // Unknown permission fails open. The probe mirrors the write's routing:
-  // PR bodies are slug-routed to the PR's own repo (runWorkItemBodyUpdate),
-  // issue bodies route through the issue source.
+  // Why: read-tier viewers only keep the pencil on items they authored;
+  // unknown fails open. The probe mirrors the write's routing: PR bodies are
+  // slug-routed to the PR's own repo, issue bodies to the issue source.
   const bodyViewerPermission = useRepoViewerPermission(
     repoPath,
     item.repoId ?? null,
@@ -3889,12 +3885,9 @@ function PRActionsPanel({
   const mergeMethods = resolveGitHubPRMergeMethods(actionItem.mergeMethodSettings)
   const sourceSettings = getTaskSourceRuntimeSettings(sourceContext)
   const mergeTarget = getActiveRuntimeTarget(sourceSettings)
-  // Why: repos where the viewer can only read/comment (typical for the
-  // upstream of a fork) reject state/merge mutations with 403s — hide the
-  // close/reopen action and disable merge instead of offering doomed writes.
-  // PR authors keep close/reopen on their own PRs per GitHub semantics.
-  // Probe the PR's own repo (URL slug): the default probe resolves the issue
-  // source, which on forks is upstream while PR writes target origin.
+  // Why: read-tier repos reject state/merge writes with 403s — hide/disable
+  // them instead of offering doomed writes; PR authors keep close/reopen.
+  // Probe the PR's own repo (URL slug), not the upstream-leaning issue source.
   const prPermissionSlug = useMemo(() => parseOwnerRepoFromItemUrl(item.url), [item.url])
   const viewerPermission = useRepoViewerPermission(
     repoPath,
@@ -5707,11 +5700,9 @@ function GHEditSection({
   )
   const repoAssigneesBySlug = useRepoAssigneesBySlug(slugOwner, slugRepo, assignees, sourceSettings)
   const repoAssignees = projectOrigin ? repoAssigneesBySlug : repoAssigneesByPath
-  // Why: on repos where the viewer can only read/comment (typical for the
-  // upstream of a fork), state/label/assignee writes are guaranteed 403s —
-  // hide the affordances instead of offering doomed mutations. Unknown
-  // permission fails open; issue authors keep close/reopen on their own
-  // issues per GitHub semantics (local hosts only until a viewer RPC exists).
+  // Why: read-tier repos (typical fork upstreams) reject state/label/assignee
+  // writes with 403s — hide the affordances. Unknown fails open; issue authors
+  // keep close/reopen (local hosts only until a viewer RPC exists).
   const viewerPermission = useRepoViewerPermission(
     repoPath,
     repoId,

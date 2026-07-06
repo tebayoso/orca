@@ -8,15 +8,10 @@ import { ghExecFileAsync, acquire, release, resolveIssueSource, ghRepoExecOption
 const VALID_SLUG_SEGMENT = /^(?!\.{1,2}$)[A-Za-z0-9_.-]+$/
 
 /**
- * Highest permission the authenticated viewer holds on the repo that issue
- * mutations for `repoPath` would target (or an explicit owner/repo override
- * for Project-origin rows).
- *
- * Why: the item dialog offers state/label/assignee mutations, but on repos
- * where the viewer can only read/comment (typical for upstreams of forks)
- * those writes are guaranteed 403s. Resolution mirrors `updateIssue` so the
- * permission always describes the repo the write would actually hit.
- * Returns null on any failure — callers fail open and keep the controls.
+ * Highest permission the viewer holds on the repo that issue mutations for
+ * `repoPath` would target (or the explicit owner/repo override). Resolution
+ * mirrors `updateIssue` so the answer describes the repo the write would hit.
+ * Returns null on any failure — callers fail open and keep their controls.
  */
 export async function getViewerRepoPermission(
   repoPath: string,

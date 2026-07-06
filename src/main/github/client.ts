@@ -1338,13 +1338,10 @@ export async function listWorkItems(
 }
 
 /**
- * 'mixed' preference: list work items from BOTH origin and upstream merged.
- *
- * Items are stamped with their source remote and slug, and ids gain a slug
- * suffix — origin #5 and upstream #5 are different items and must not
- * collide on React keys or selection. Repos without a distinct upstream
- * degrade to a single 'auto' pass (no stamping), so non-forks behave
- * exactly as before even with the preference persisted.
+ * 'mixed': list work items from origin and upstream merged. Items are stamped
+ * with their source remote/slug and ids gain a slug suffix (origin #5 and
+ * upstream #5 must not collide on React keys or selection). Without a
+ * distinct upstream this degrades to a single unstamped 'auto' pass.
  */
 async function listMixedWorkItems(
   repoPath: string,

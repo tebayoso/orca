@@ -193,9 +193,7 @@ describe('createGitHubSlice.evictGitHubRepoCaches', () => {
   })
 
   // Why: repos with project host setups cache under `{scope}::{repoId}::…`
-  // keys. Prefix-only eviction missed them, so issue-source preference flips
-  // (upstream/origin/mixed) served the old source's items from cache instead
-  // of refetching.
+  // keys — a source flip must stale those too, not only prefix matches.
   it('evicts host/source-scoped cache entries for the repo', () => {
     const store = createTestStore()
     const repoId = 'repo-1'

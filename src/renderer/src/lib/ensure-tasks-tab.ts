@@ -18,12 +18,9 @@ export function getTasksTabForWorktree(worktreeId: string): ExistingTasksTab | n
   )
 }
 
-/** Tasks are provider work items fetched per repo, so the tab only makes
- *  sense when the worktree resolves to a git-backed repo.
- *
- *  Pass `state` when calling from inside a zustand selector so the check
- *  reads the subscribed snapshot (stays reactive) instead of `getState()`.
- *  Optional access: partial store mocks in tests omit lookup actions. */
+/** Tasks are provider work items fetched per repo — the tab needs a
+ *  git-backed repo. Pass `state` from zustand selectors so the check reads
+ *  the subscribed snapshot (stays reactive) instead of `getState()`. */
 export function worktreeSupportsTasksTab(
   worktreeId: string,
   state: Pick<AppState, 'getKnownWorktreeById' | 'repos'> = useAppStore.getState()

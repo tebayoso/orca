@@ -5862,12 +5862,9 @@ function GHEditSection({
   const repoAssigneesBySlug = useRepoAssigneesBySlug(slugOwner, slugRepo, assignees, sourceSettings)
   const repoAssignees = projectOrigin ? repoAssigneesBySlug : repoAssigneesByPath
 
-  // Why: on repos where the viewer can only read/comment (typical for the
-  // upstream of a fork), state/label/assignee writes are guaranteed 403s —
-  // render the chips read-only instead of offering doomed mutations. Unknown
-  // permission (fetch failed / still loading) fails open. Item authors keep
-  // close/reopen on their own issues per GitHub semantics; on runtime/SSH
-  // targets the viewer login is unavailable, so that exception gates too.
+  // Why: read-tier repos (typical fork upstreams) reject state/label/assignee
+  // writes with 403s — render the chips read-only. Unknown fails open; author
+  // exceptions gate on viewer login, unavailable on runtime/SSH targets.
   const viewerPermission = useRepoViewerPermission(
     repoPath,
     repoId,

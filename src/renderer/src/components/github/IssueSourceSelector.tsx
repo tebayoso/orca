@@ -30,17 +30,13 @@ export type IssueSourceSelectorProps = {
    *  slug in a tooltip. Used where horizontal space is tight (composer
    *  description line). Defaults to `'labeled'` on the Tasks header. */
   density?: 'labeled' | 'compact'
-  /** Why: 'mixed' is a *list* concept (merge both remotes). Single-target
-   *  surfaces like the Create Issue composer must not offer it — a new issue
-   *  is filed in exactly one repo, and 'mixed' resolves to the auto heuristic
-   *  there, which would make the pill a silent alias for Upstream. */
+  /** Why: 'mixed' is a list concept. Single-target surfaces (Create Issue)
+   *  must not offer it — there it resolves like 'auto', making the pill a
+   *  silent alias for Upstream. */
   showMixed?: boolean
-  /** True while a source flip's refetch is in flight. Pills disable
-   *  immediately; the trailing spinner appears after ~200ms so fast local
-   *  flips show nothing (STYLEGUIDE UX rule 1, SSH corollary). Leave
-   *  undefined on surfaces that never refetch on flip (the Create Issue
-   *  composer) — the reserved spinner slot only renders when the prop is
-   *  wired, so those surfaces don't carry a permanently empty cap. */
+  /** True while a source flip's refetch is in flight: pills disable at once,
+   *  the spinner shows after ~200ms (STYLEGUIDE UX rule 1). Leave undefined on
+   *  surfaces that never refetch — the spinner slot only renders when wired. */
   busy?: boolean
   /** Suppresses the "Issues from <slug>" hover tooltip. Passed by callers on
    *  surfaces that only act on issues (e.g. the Create Issue composer) where
@@ -124,9 +120,8 @@ export default function IssueSourceSelector({
   // Why: in `'auto'`/unset, the effective pill is whatever `getIssueOwnerRepo`
   // picks — upstream-if-present-else-origin. Since we only render here when
   // upstream exists, the heuristic resolves to upstream.
-  // Why: on single-target surfaces a persisted 'mixed' resolves like 'auto'
-  // (upstream-if-exists), so highlight the pill that reflects the actual
-  // target instead of a hidden third state.
+  // Why: without the Mixed pill a persisted 'mixed' resolves like 'auto', so
+  // highlight the pill matching the actual target, not a hidden third state.
   const effective: 'upstream' | 'origin' | 'mixed' =
     preference === 'upstream' || preference === 'origin'
       ? preference
@@ -228,9 +223,8 @@ export default function IssueSourceSelector({
             : translate('auto.components.github.IssueSourceSelector.9d1ff63799', 'Mixed')}
         </button>
       ) : null}
-      {/* Why: permanently reserved footprint on busy-capable surfaces — the
-          chip must not resize mid-action when the spinner becomes visible
-          (UX rule 1). Surfaces that never flip-refetch skip the slot. */}
+      {/* Why: reserved footprint — the chip must not resize mid-action when
+          the spinner becomes visible (UX rule 1). */}
       {busySlotReserved ? (
         <span className="inline-flex w-4 items-center justify-center self-stretch border-l border-border/40">
           <LoaderCircle

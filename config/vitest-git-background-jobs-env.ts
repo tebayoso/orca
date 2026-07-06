@@ -1,8 +1,6 @@
-// Why: git fixtures spawn `git gc --auto --detach` (and maintenance jobs)
-// after commits/fetches; the detached process keeps writing .git/objects
-// while afterEach removes the fixture dir, failing teardown with ENOTEMPTY.
-// GIT_CONFIG_* env entries override repo/global config for every git process
-// the suite — or code under test — spawns, so background jobs never start.
+// Why: detached `git gc --auto`/maintenance jobs keep writing .git/objects
+// while afterEach removes fixture dirs (ENOTEMPTY). GIT_CONFIG_* env overrides
+// repo/global config for every spawned git process, so they never start.
 const entries: [string, string][] = [
   ['gc.auto', '0'],
   ['gc.autoDetach', 'false'],

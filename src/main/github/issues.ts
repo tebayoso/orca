@@ -509,12 +509,9 @@ export async function listAssignableUsers(
 }
 
 /**
- * Enable the Issues feature on a repository the caller administers.
- *
- * Why: freshly-created forks inherit issues turned OFF, so the tasks page's
- * issue fetch fails with `issues_disabled` — a state Retry can never fix.
- * The banner offers this instead; requires admin permission on the repo
- * (always true for the user's own fork).
+ * Enable the Issues feature on a repository the caller administers. Fresh
+ * forks inherit issues turned off, so the tasks page's `issues_disabled`
+ * banner offers this admin-only toggle alongside Retry.
  */
 export async function enableRepoIssues(
   repoPath: string,
@@ -522,10 +519,8 @@ export async function enableRepoIssues(
   connectionId?: string | null,
   localGitOptions: LocalGitExecOptions = {}
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  // Why: owner/repo cross the untrusted IPC boundary and are interpolated
-  // into the gh API path of a mutating PATCH — reject anything that could
-  // smuggle extra path segments or query strings, including `.`/`..`
-  // segments that would resolve to a different route.
+  // Why: owner/repo cross the untrusted IPC boundary into a mutating gh API
+  // path — reject `.`/`..` and separators that could reroute the PATCH.
   const validSlugSegment = /^(?!\.{1,2}$)[A-Za-z0-9_.-]+$/
   if (!validSlugSegment.test(ownerRepo.owner) || !validSlugSegment.test(ownerRepo.repo)) {
     return { ok: false, error: 'Invalid repository slug' }
