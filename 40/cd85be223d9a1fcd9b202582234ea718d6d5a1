@@ -1,0 +1,43 @@
+src/renderer/src/components/TaskPage.tsx
+  s_75663f70980b93::t_81162d1bdea2b1 9324-9345,9361
+src/main/github/client.ts
+  s_75663f70980b93::t_7a66bf77b094ac 1556-1568,1571,1581-1595
+  s_75663f70980b93::t_2a6c619bfcc10b 1407-1415
+  s_75663f70980b93::t_97f0b0912ee83a 1596-1597
+src/shared/types.ts
+  s_75663f70980b93::t_8f0df01e051de5 1921-1926
+src/renderer/src/components/tab-bar/EditorFileTab.tsx
+  s_75663f70980b93::t_2065cfc490064d 3
+  s_75663f70980b93::t_7ec918385434eb 68-71
+src/renderer/src/store/slices/github.ts
+  s_75663f70980b93::t_5fcfcf3ecbebe1 2698-2706
+  s_75663f70980b93::t_670f24ad4263da 879-890
+  s_75663f70980b93::t_d1b3051d54b403 2646-2651,2655,2662
+  s_75663f70980b93::t_44c13de36d365a 2663,2707-2709
+src/renderer/src/components/GitHubItemDialog.tsx
+  s_75663f70980b93::t_a91f647840392b 552-553,557
+  s_75663f70980b93::t_6533982502a47d 3177-3181,3185-3189
+  s_75663f70980b93::t_b7fabfecd89723 3898-3901,3905
+src/renderer/src/components/github/IssueSourceSelector.tsx
+  s_75663f70980b93::t_c611f7536ea71a 173-178
+src/renderer/src/components/floating-terminal/FloatingTerminalPanel.tsx
+  s_75663f70980b93::t_1b8832c5f3212d 1591-1602
+  s_75663f70980b93::t_d43b7212ca8916 10
+  s_75663f70980b93::t_5b8c3a5b7ecb54 1588-1590
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "40cd85be223d9a1fcd9b202582234ea718d6d5a1",
+  "prompts": {},
+  "sessions": {
+    "s_75663f70980b93": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "37592764-01e2-4af0-96e8-6e59d3358847",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
