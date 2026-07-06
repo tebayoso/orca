@@ -1,0 +1,19 @@
+src/shared/english-message-locale-env.ts
+  s_75663f70980b93::t_5100b0e37779f8 11-15,21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "f5e81f1ddc46624ad5ea011b816af4d7ebd1d527",
+  "prompts": {},
+  "sessions": {
+    "s_75663f70980b93": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "37592764-01e2-4af0-96e8-6e59d3358847",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
