@@ -1,0 +1,43 @@
+src/renderer/src/components/GitHubItemDialog.tsx
+  s_75663f70980b93::t_7b22bd22410897 552-553
+  s_75663f70980b93::t_db4202a98718bc 3177-3179
+  s_75663f70980b93::t_0fb63ebab88c39 3896-3897
+src/main/github/client.ts
+  s_75663f70980b93::t_12b7bf333a876e 1407-1408
+  s_75663f70980b93::t_ea369ac7c0d06d 1554-1555
+src/renderer/src/components/github/IssueSourceSelector.tsx
+  s_75663f70980b93::t_7c302db79bc842 173-174
+src/renderer/src/components/tab-bar/EditorFileTab.tsx
+  s_75663f70980b93::t_939d31cc2e11db 68-69
+src/renderer/src/store/slices/github.ts
+  s_75663f70980b93::t_d3dc2703af0bd1 882-883
+  s_75663f70980b93::t_d99b9f6fa8839d 2651-2652
+  s_75663f70980b93::t_0b72e5199f4efb 892-897
+  s_75663f70980b93::t_9d2210c6deb76f 2701-2703
+src/shared/english-message-locale-env.ts
+  s_75663f70980b93::t_037edc20a8ff61 2-6
+src/main/git/runner.ts
+  s_75663f70980b93::t_632042855130ea 555-556
+src/shared/types.ts
+  s_75663f70980b93::t_e336c712ddf8f0 1921-1923
+src/relay/relay-command-env.ts
+  s_75663f70980b93::t_2b0a4f37680646 156
+src/renderer/src/components/TaskPage.tsx
+  s_75663f70980b93::t_8bbcd1a917dd0b 4201-4203
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e1983b025965e6e35026a25f18a804bdc8e68bf4",
+  "prompts": {},
+  "sessions": {
+    "s_75663f70980b93": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "37592764-01e2-4af0-96e8-6e59d3358847",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
