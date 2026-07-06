@@ -1918,7 +1918,12 @@ export type ListWorkItemsResult<T> = {
     upstreamCandidate: GitHubOwnerRepo | null
   }
   errors?: {
-    issues?: ClassifiedError
+    /** Why the optional `source`: in 'mixed' mode `sources.issues` reports the
+     *  auto-primary (upstream) slug while the failure may come from the origin
+     *  pass. The error carries the repo that actually failed so banner copy
+     *  and the Enable-issues action target the right repository. Absent on
+     *  single-source lists, where `sources.issues` already is the failing repo. */
+    issues?: ClassifiedError & { source?: GitHubOwnerRepo }
   }
   /** True when the user's per-repo preference was `'upstream'` but no upstream
    *  remote is configured, so the resolver fell back to origin. Renderer uses

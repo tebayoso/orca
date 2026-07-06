@@ -876,7 +876,18 @@ function matchesRepoCacheKey(key: string, prefixes: readonly string[]): boolean 
   // in front (`{scope}::{repoId}::…`, see workItemsCacheKey). Prefix-only
   // matching missed those, so issue-source preference flips evicted nothing
   // for host-scoped repos and the refetch served the old source from cache.
-  return prefixes.some((prefix) => key.startsWith(prefix) || key.includes(`::${prefix}`))
+  if (prefixes.some((prefix) => key.startsWith(prefix))) {
+    return true
+  }
+  // Why: anchor the scoped match to the segment right after the scope — an
+  // unanchored `includes` would also hit `::{repoId}::` appearing inside the
+  // free-text query segment of another repo's key and evict that repo too.
+  const scopeSeparator = key.indexOf('::')
+  if (scopeSeparator === -1) {
+    return false
+  }
+  const afterScope = key.slice(scopeSeparator + 2)
+  return prefixes.some((prefix) => afterScope.startsWith(prefix))
 }
 
 function clearInflightWorkItemsForRepo(repoId: string, repoPath?: string): void {
@@ -2632,19 +2643,24 @@ export const createGitHubSlice: StateCreator<AppState, [], [], GitHubSlice> = (s
         // wrongness introduced by the issue-source split in #1076; PR-side
         // failures existed before and are out of scope for this banner.
         const issuesError = envelope.errors?.issues
-        // Why: if the main process resolved `errors.issues` but not `sources.issues`,
+        // Why: mixed-mode errors carry the failing side's slug on the error
+        // itself (sources.issues reports the auto-primary side, which may not
+        // be the one that failed). Fall back to sources.issues for
+        // single-source lists.
+        const issuesErrorSource = issuesError?.source ?? envelope.sources.issues
+        // Why: if the main process resolved `errors.issues` but no source slug,
         // the renderer has no slug to render in the banner copy, so the error is
         // dropped from the cache entry. Log it so this rare case is at least visible
         // in devtools rather than disappearing silently.
-        if (issuesError && !envelope.sources.issues) {
+        if (issuesError && !issuesErrorSource) {
           console.warn(
             '[workItems] dropping issues-side error with no resolved source:',
             issuesError
           )
         }
         const errorForCache: WorkItemsCacheError | undefined =
-          issuesError && envelope.sources.issues
-            ? { ...issuesError, source: envelope.sources.issues }
+          issuesError && issuesErrorSource
+            ? { ...issuesError, source: issuesErrorSource }
             : undefined
         const currentRepo = findRepoForGitHubOwner(get(), repoId, repoPath)
         const currentHostId = getGitHubWorkItemSourceHostId(
@@ -2678,6 +2694,18 @@ export const createGitHubSlice: StateCreator<AppState, [], [], GitHubSlice> = (s
         // UI can continue to render something useful while the user retries.
         if (!isGitHubWorkItemsSshRemoteRequiredError(err)) {
           console.error('Failed to fetch GitHub work items:', err)
+        }
+        // Why: fetchedAt 0 marks a flip-staled entry (see
+        // setIssueSourcePreference) whose data belongs to the OLD source.
+        // Stale-while-revalidate is only safe when the revalidate lands; on
+        // failure, drop the entry so the wrong repo's items are never
+        // rendered under the newly selected source.
+        if (get().workItemsCache[key]?.fetchedAt === 0) {
+          set((s) => {
+            const next = { ...s.workItemsCache }
+            delete next[key]
+            return { workItemsCache: next }
+          })
         }
         throw err
       } finally {

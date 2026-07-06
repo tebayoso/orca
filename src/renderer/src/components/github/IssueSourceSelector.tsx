@@ -170,7 +170,12 @@ export default function IssueSourceSelector({
         aria-pressed={effective === 'upstream'}
         disabled={interactionDisabled}
         onClick={() => {
-          if (interactionDisabled || persistedMatches('upstream')) {
+          // Why: with a persisted 'mixed' on a surface without the Mixed pill,
+          // this pill already renders active (effective falls back to
+          // 'upstream'). A click there looks like a no-op but would silently
+          // overwrite the repo-wide 'mixed' preference — swallow it.
+          const rendersAsMixedAlias = preference === 'mixed' && !showMixed
+          if (interactionDisabled || persistedMatches('upstream') || rendersAsMixedAlias) {
             return
           }
           onChange('upstream')

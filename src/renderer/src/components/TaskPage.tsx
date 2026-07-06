@@ -9321,23 +9321,28 @@ export default function TaskPage({
                           </span>{' '}
                           — {err.message}
                         </span>
-                        {err.type === 'issues_disabled' ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => void handleEnableRepoIssues(s, err.source)}
-                            disabled={tasksLoading || enablingIssuesSourceKeys.has(s.sourceKey)}
-                          >
-                            {enablingIssuesSourceKeys.has(s.sourceKey) ? (
-                              <span className="flex items-center gap-1">
-                                <LoaderCircle className="h-3 w-3 animate-spin" />
-                                {translate('auto.components.TaskPage.ac00881a55', 'Enabling…')}
-                              </span>
-                            ) : (
-                              translate('auto.components.TaskPage.faa1abd491', 'Enable issues')
-                            )}
-                          </Button>
-                        ) : (
+                        <span className="flex shrink-0 items-center gap-2">
+                          {err.type === 'issues_disabled' ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => void handleEnableRepoIssues(s, err.source)}
+                              disabled={tasksLoading || enablingIssuesSourceKeys.has(s.sourceKey)}
+                            >
+                              {enablingIssuesSourceKeys.has(s.sourceKey) ? (
+                                <span className="flex items-center gap-1">
+                                  <LoaderCircle className="h-3 w-3 animate-spin" />
+                                  {translate('auto.components.TaskPage.ac00881a55', 'Enabling…')}
+                                </span>
+                              ) : (
+                                translate('auto.components.TaskPage.faa1abd491', 'Enable issues')
+                              )}
+                            </Button>
+                          ) : null}
+                          {/* Why: Retry stays available even for issues_disabled —
+                              Enable issues is an admin-only PATCH, so non-admin
+                              viewers need a recovery path after an admin flips
+                              the setting on GitHub. */}
                           <Button
                             variant="outline"
                             size="sm"
@@ -9353,7 +9358,7 @@ export default function TaskPage({
                               translate('auto.components.TaskPage.0bfbf62f75', 'Retry')
                             )}
                           </Button>
-                        )}
+                        </span>
                       </div>
                     )
                   })}

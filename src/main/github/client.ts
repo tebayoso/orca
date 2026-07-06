@@ -1404,7 +1404,15 @@ async function listMixedWorkItems(
     .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
     .slice(0, limit)
 
-  const issuesError = originResult.errors?.issues ?? upstreamResult.errors?.issues
+  // Why: stamp the failing side's slug onto the error — `sources.issues`
+  // below reports the upstream (auto-primary) slug, so without this an
+  // origin-side failure would be attributed to upstream and the banner's
+  // Enable-issues action would PATCH the wrong repository.
+  const issuesError = originResult.errors?.issues
+    ? { ...originResult.errors.issues, source: originResult.sources.issues ?? origin }
+    : upstreamResult.errors?.issues
+      ? { ...upstreamResult.errors.issues, source: upstreamResult.sources.issues ?? upstream }
+      : undefined
   return {
     items,
     // Why: report each side's auto-primary source — issues resolve to
@@ -1545,9 +1553,22 @@ export async function countWorkItems(
   const parsedQuery = trimmedQuery ? parseTaskQuery(trimmedQuery) : null
   const effectiveQuery = parsedQuery ?? defaultOpenWorkItemQuery()
 
+  // Why: 'mixed' lists issues AND PRs from both remotes (listMixedWorkItems),
+  // so the count must sum the full query against each repo — the split
+  // issue-half/PR-half logic below would undercount and truncate pagination.
+  // Mirrors listMixedWorkItems' degradation: without two distinct remotes,
+  // fall through to the single-source paths.
+  const mixedTargets =
+    preference === 'mixed' &&
+    prResolved.originCandidate &&
+    prResolved.upstreamCandidate &&
+    !sameOwnerRepo(prResolved.originCandidate, prResolved.upstreamCandidate)
+      ? [prResolved.originCandidate, prResolved.upstreamCandidate]
+      : null
+
   await acquire()
   try {
-    if (sameOwnerRepo(issueOwnerRepo, prOwnerRepo)) {
+    if (!mixedTargets && sameOwnerRepo(issueOwnerRepo, prOwnerRepo)) {
       return await countWorkItemsForQuery(
         repoPath,
         ownerRepo,
@@ -1555,6 +1576,23 @@ export async function countWorkItems(
         connectionId,
         localGitOptions
       )
+    }
+
+    if (mixedTargets) {
+      const mixedResults = await Promise.allSettled(
+        mixedTargets.map((target) =>
+          countWorkItemsForQuery(repoPath, target, effectiveQuery, connectionId, localGitOptions)
+        )
+      )
+      let mixedTotal = 0
+      for (const r of mixedResults) {
+        if (r.status === 'fulfilled') {
+          mixedTotal += r.value
+        } else {
+          console.warn('countWorkItems partial failure:', r.reason)
+        }
+      }
+      return mixedTotal
     }
 
     const counts: Promise<number>[] = []

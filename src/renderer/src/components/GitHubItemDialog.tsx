@@ -549,10 +549,12 @@ function PRAssigneesPanel({
   const repoAssignees = slugOwner && slugRepo ? repoAssigneesBySlug : repoAssigneesByPath
   // Why: read-tier repos reject assignee writes with 403s — fold the viewer
   // permission into the existing repo-context gate (fail-open on unknown).
+  // The URL slug identifies the repo the PR lives in (and the write targets);
+  // the default probe resolves the issue source, which on forks is upstream.
   const prAssigneeViewerPermission = useRepoViewerPermission(
     repoPath,
     item.repoId ?? null,
-    projectOrigin ? { owner: projectOrigin.owner, repo: projectOrigin.repo } : null,
+    projectOrigin ? { owner: projectOrigin.owner, repo: projectOrigin.repo } : assigneeSlug,
     sourceSettings
   )
   const canEditAssignees =
@@ -3172,11 +3174,19 @@ function ConversationTab({
   )
   // Why: editing someone else's issue/PR body needs write access — read-tier
   // viewers only keep the pencil on items they authored (GitHub semantics).
-  // Unknown permission fails open.
+  // Unknown permission fails open. PR body writes are slug-routed to the repo
+  // the PR lives in (see runWorkItemBodyUpdate's parsedSlug), so probe that
+  // repo — the default probe resolves the issue source, which on forks is
+  // upstream while the PR lives on origin. Issues keep the default probe:
+  // their writes do route through the issue source.
   const bodyViewerPermission = useRepoViewerPermission(
     repoPath,
     item.repoId ?? null,
-    projectOrigin ? { owner: projectOrigin.owner, repo: projectOrigin.repo } : null,
+    projectOrigin
+      ? { owner: projectOrigin.owner, repo: projectOrigin.repo }
+      : item.type === 'pr'
+        ? bodySlug
+        : null,
     getTaskSourceRuntimeSettings(sourceContext)
   )
   const bodyViewerLogin = useGitHubViewerLogin(getTaskSourceRuntimeSettings(sourceContext))
@@ -3885,10 +3895,14 @@ function PRActionsPanel({
   // upstream of a fork) reject state/merge mutations with 403s — hide the
   // close/reopen action and disable merge instead of offering doomed writes.
   // PR authors keep close/reopen on their own PRs per GitHub semantics.
+  // Why the URL-slug override: the default probe resolves the ISSUE source
+  // (upstream-preferring), but PR writes target the repo the PR lives in —
+  // without it, fork owners get locked out of merging their own fork's PRs.
+  const prPermissionSlug = useMemo(() => parseOwnerRepoFromItemUrl(item.url), [item.url])
   const viewerPermission = useRepoViewerPermission(
     repoPath,
     repoId,
-    projectOrigin ? { owner: projectOrigin.owner, repo: projectOrigin.repo } : null,
+    projectOrigin ? { owner: projectOrigin.owner, repo: projectOrigin.repo } : prPermissionSlug,
     sourceSettings
   )
   const viewerLogin = useGitHubViewerLogin(sourceSettings)

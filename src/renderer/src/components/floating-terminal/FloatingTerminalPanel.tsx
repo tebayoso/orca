@@ -7,6 +7,7 @@ import { lazyWithRetry as lazy } from '@/lib/lazy-with-retry'
 import { FileText, Globe, Minus, TerminalSquare } from 'lucide-react'
 import { toast } from 'sonner'
 import EmulatorPane from '@/components/emulator-pane/EmulatorPane'
+import TasksPane from '@/components/tasks-pane/TasksPane'
 import { ShortcutKeyCombo } from '@/components/ShortcutKeyCombo'
 import { useContextualTour } from '@/components/contextual-tours/use-contextual-tour'
 import TabBar from '@/components/tab-bar/TabBar'
@@ -1584,6 +1585,21 @@ export function FloatingTerminalPanel({
                 aria-hidden={!isActive}
               >
                 <EmulatorPane tab={tab} worktreeId={tab.worktreeId} isActive={open && isActive} />
+              </div>
+            )
+          })}
+          {/* Why: tasks tabs participate in the floating tab strip (restored/
+              synced sessions can carry them), so they need a content branch —
+              without one an activated tasks tab renders a blank body. */}
+          {tasksItems.map((tab) => {
+            const isActive = tab.id === activeTab?.id
+            return (
+              <div
+                key={tab.id}
+                className={isActive ? 'absolute inset-0 flex' : 'absolute inset-0 hidden'}
+                aria-hidden={!isActive}
+              >
+                <TasksPane worktreeId={tab.worktreeId} isActive={open && isActive} />
               </div>
             )
           })}
