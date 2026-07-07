@@ -1141,7 +1141,7 @@ export class GitHandler {
             this.dispatcher.notify('git.cloneProgress', {
               progressId,
               phase: match[1].trim(),
-              percent: parseInt(match[2], 10)
+              percent: Number.parseInt(match[2], 10)
             })
           }
         }
