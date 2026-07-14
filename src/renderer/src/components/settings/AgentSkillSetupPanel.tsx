@@ -23,6 +23,8 @@ type AgentSkillSetupPanelProps = {
   terminalAriaLabel: string
   terminalWorktreeId: string
   installed: boolean
+  /** When installed but behind the app-bundled skill reference. */
+  outdated?: boolean
   loading: boolean
   error: string | null
   installDisabled?: boolean
@@ -58,6 +60,7 @@ export function AgentSkillSetupPanel({
   terminalAriaLabel,
   terminalWorktreeId,
   installed,
+  outdated = false,
   loading,
   error,
   installDisabled = false,
@@ -201,7 +204,12 @@ export function AgentSkillSetupPanel({
           {terminalOpening
             ? translate('auto.components.settings.AgentSkillSetupPanel.5f818f12ab', 'Preparing...')
             : installed
-              ? installedInstallLabel
+              ? outdated
+                ? translate(
+                    'auto.components.settings.AgentSkillSetupPanel.updateOutdated',
+                    'Update'
+                  )
+                : installedInstallLabel
               : installLabel}
         </Button>
       ) : null}
@@ -261,6 +269,13 @@ export function AgentSkillSetupPanel({
                     {translate(
                       'auto.components.settings.AgentSkillSetupPanel.68a468752e',
                       'Checking...'
+                    )}
+                  </IntegrationStatusPill>
+                ) : installed && outdated ? (
+                  <IntegrationStatusPill tone="attention">
+                    {translate(
+                      'auto.components.settings.AgentSkillSetupPanel.outdated',
+                      'Outdated'
                     )}
                   </IntegrationStatusPill>
                 ) : installed ? (

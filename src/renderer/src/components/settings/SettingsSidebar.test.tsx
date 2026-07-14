@@ -62,6 +62,12 @@ function renderSidebar(
                 title: 'Voice',
                 icon: Mic,
                 installStatus: 'installed'
+              },
+              {
+                id: 'computer-use',
+                title: 'Computer Use',
+                icon: Network,
+                installStatus: 'outdated'
               }
             ]
           },
@@ -114,6 +120,7 @@ describe('SettingsSidebar', () => {
 
     expect(markup).toContain('Not installed')
     expect(markup).toContain('Installed')
+    expect(markup).toContain('Outdated')
     expect(markup).toContain('Optional')
   })
 

@@ -1,13 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { handleMock, discoverSkillsMock, getDefaultWslDistroMock, getWslHomeMock } = vi.hoisted(
-  () => ({
-    handleMock: vi.fn(),
-    discoverSkillsMock: vi.fn(),
-    getDefaultWslDistroMock: vi.fn(),
-    getWslHomeMock: vi.fn()
-  })
-)
+const {
+  handleMock,
+  discoverSkillsMock,
+  checkFreshnessMock,
+  getDefaultWslDistroMock,
+  getWslHomeMock
+} = vi.hoisted(() => ({
+  handleMock: vi.fn(),
+  discoverSkillsMock: vi.fn(),
+  checkFreshnessMock: vi.fn(),
+  getDefaultWslDistroMock: vi.fn(),
+  getWslHomeMock: vi.fn()
+}))
 
 vi.mock('electron', () => ({
   ipcMain: {
@@ -17,6 +22,10 @@ vi.mock('electron', () => ({
 
 vi.mock('../skills/discovery', () => ({
   discoverSkills: discoverSkillsMock
+}))
+
+vi.mock('../skills/freshness', () => ({
+  checkOrcaSkillFreshness: checkFreshnessMock
 }))
 
 vi.mock('../wsl', () => ({
@@ -36,9 +45,15 @@ describe('registerSkillsHandlers', () => {
   beforeEach(() => {
     handleMock.mockReset()
     discoverSkillsMock.mockReset()
+    checkFreshnessMock.mockReset()
     getDefaultWslDistroMock.mockReset()
     getWslHomeMock.mockReset()
     discoverSkillsMock.mockResolvedValue({ skills: [], sources: [], scannedAt: 1 })
+    checkFreshnessMock.mockResolvedValue({
+      skills: [],
+      scannedAt: 1,
+      referenceRoot: null
+    })
     getWslHomeMock.mockReturnValue('\\\\wsl.localhost\\Ubuntu\\home\\alice')
     Object.defineProperty(process, 'platform', {
       configurable: true,
@@ -60,6 +75,23 @@ describe('registerSkillsHandlers', () => {
     }
     return call[1] as (_event: unknown, target?: unknown) => Promise<unknown>
   }
+
+  function getFreshnessHandler() {
+    registerSkillsHandlers(store as never)
+    const call = handleMock.mock.calls.find(
+      (entry: unknown[]) => entry[0] === 'skills:checkFreshness'
+    )
+    if (!call) {
+      throw new Error('skills:checkFreshness handler was not registered')
+    }
+    return call[1] as (_event: unknown, target?: unknown) => Promise<unknown>
+  }
+
+  it('registers a host freshness check against the shared scan context', async () => {
+    const handler = getFreshnessHandler()
+    await handler(null, undefined)
+    expect(checkFreshnessMock).toHaveBeenCalledWith({ repos })
+  })
 
   it('uses host skill discovery when resolved project runtime overrides stale WSL target state', async () => {
     const handler = getDiscoverHandler()

@@ -35,6 +35,7 @@ import type {
   WorkspaceSessionState
 } from '../../../shared/types'
 import type { SkillDiscoveryResult } from '../../../shared/skills'
+import type { SkillFreshnessResult } from '../../../shared/skill-freshness'
 import type { SshConnectionState, SshTarget } from '../../../shared/ssh-types'
 import {
   getDefaultOnboardingState,
@@ -2593,7 +2594,15 @@ function createSkillsApi(): NonNullable<Partial<PreloadApi>['skills']> {
         skills: [],
         sources: [],
         scannedAt: Date.now()
-      }))
+      })),
+    checkFreshness: (target) =>
+      callRuntimeResult<SkillFreshnessResult>('skills.checkFreshness', target, 15_000).catch(
+        () => ({
+          skills: [],
+          scannedAt: Date.now(),
+          referenceRoot: null
+        })
+      )
   }
 }
 

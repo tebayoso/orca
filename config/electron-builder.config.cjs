@@ -18,6 +18,14 @@ const featureWallResources = {
   from: 'resources/onboarding/feature-wall',
   to: 'onboarding/feature-wall'
 }
+// Why: packaged apps compare installed agent skills against these references
+// after an Orca update. Ship SKILL.md only (not full skill packages) under
+// process.resourcesPath/orca-skills so freshness checks work offline.
+const orcaSkillsReferenceResources = {
+  from: 'skills',
+  to: 'orca-skills',
+  filter: ['**/SKILL.md']
+}
 // Why: SSH relay deploy resolves bundles from process.resourcesPath in packaged
 // apps. Keeping relay assets as extraResources makes them real directories
 // instead of paths hidden inside app.asar.
@@ -31,7 +39,11 @@ const relayExtraResource = {
 // do not fall through to a developer checkout's node_modules.
 const packagedRuntimeNodeModuleResources = createPackagedRuntimeNodeModuleResources()
 
-const commonExtraResources = [relayExtraResource, ...packagedRuntimeNodeModuleResources]
+const commonExtraResources = [
+  relayExtraResource,
+  orcaSkillsReferenceResources,
+  ...packagedRuntimeNodeModuleResources
+]
 const macSpeechNativeResource = {
   from: 'node_modules/sherpa-onnx-darwin-${arch}',
   to: 'node_modules/sherpa-onnx-darwin-${arch}'

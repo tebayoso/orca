@@ -95,6 +95,7 @@ import {
   GLOBAL_AGENT_SKILL_SOURCE_KINDS,
   useInstalledAgentSkill
 } from '@/hooks/useInstalledAgentSkills'
+import { useOrcaSkillFreshness } from '@/hooks/useOrcaSkillFreshness'
 import { useActiveProjectSkillRuntime } from '@/hooks/useActiveProjectSkillRuntime'
 import {
   deriveNeededRepoIds,
@@ -192,9 +193,13 @@ function getSettingsNavGroupDefinitionsForSearch(
 function getSkillNavInstallStatus(skill: {
   installed: boolean
   loading: boolean
+  outdated?: boolean
 }): SettingsNavInstallStatus {
   if (skill.loading) {
     return 'checking'
+  }
+  if (skill.installed && skill.outdated) {
+    return 'outdated'
   }
   return skill.installed ? 'installed' : 'install'
 }
@@ -306,6 +311,9 @@ function Settings(): React.JSX.Element {
     enabled: showDesktopOnlySettings,
     discoveryTarget: activeSkillRuntime.discoveryTarget,
     sourceKinds: GLOBAL_AGENT_SKILL_SOURCE_KINDS
+  })
+  const skillFreshness = useOrcaSkillFreshness({
+    discoveryTarget: activeSkillRuntime.discoveryTarget
   })
   const [voiceModelStatesLoading, setVoiceModelStatesLoading] = useState(showDesktopOnlySettings)
   // Why: the Terminal settings section shares one search index with the
@@ -667,22 +675,43 @@ function Settings(): React.JSX.Element {
     orchestrationSkill
   const { installed: computerUseSkillInstalled, loading: computerUseSkillLoading } =
     computerUseSkill
+  const outdatedSectionIds = useMemo(() => {
+    const sectionIds = new Set<string>()
+    for (const skill of skillFreshness.outdatedSkills) {
+      sectionIds.add(skill.settingsSectionId)
+    }
+    return sectionIds
+  }, [skillFreshness.outdatedSkills])
   const capabilityInstallStatusBySectionId = useMemo(() => {
     const next = new Map<string, SettingsNavInstallStatus>([
       [
         'orchestration',
         getSkillNavInstallStatus({
           installed: orchestrationSkillInstalled,
-          loading: orchestrationSkillLoading
+          loading: orchestrationSkillLoading || skillFreshness.loading,
+          outdated: outdatedSectionIds.has('orchestration')
         })
       ]
     ])
+    if (outdatedSectionIds.has('general')) {
+      next.set('general', 'outdated')
+    }
+    if (outdatedSectionIds.has('integrations')) {
+      next.set('integrations', 'outdated')
+    }
+    if (outdatedSectionIds.has('experimental')) {
+      next.set('experimental', 'outdated')
+    }
+    if (outdatedSectionIds.has('mobile-emulator') && showDesktopOnlySettings) {
+      next.set('mobile-emulator', 'outdated')
+    }
     if (showDesktopOnlySettings) {
       next.set(
         'computer-use',
         getSkillNavInstallStatus({
           installed: computerUseSkillInstalled,
-          loading: computerUseSkillLoading
+          loading: computerUseSkillLoading || skillFreshness.loading,
+          outdated: outdatedSectionIds.has('computer-use')
         })
       )
       if (settings) {
@@ -703,8 +732,10 @@ function Settings(): React.JSX.Element {
     modelStates,
     orchestrationSkillInstalled,
     orchestrationSkillLoading,
+    outdatedSectionIds,
     settings,
     showDesktopOnlySettings,
+    skillFreshness.loading,
     voiceModelStatesLoading
   ])
   const navSections = useMemo(

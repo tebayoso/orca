@@ -1,7 +1,9 @@
 import { ipcMain } from 'electron'
 import type { Store } from '../persistence'
 import { discoverSkills } from '../skills/discovery'
+import { checkOrcaSkillFreshness } from '../skills/freshness'
 import type { SkillDiscoveryResult, SkillDiscoveryTarget } from '../../shared/skills'
+import type { SkillFreshnessResult } from '../../shared/skill-freshness'
 import { getDefaultWslDistro, getWslHome } from '../wsl'
 
 type SkillDiscoveryRuntimeTarget =
@@ -32,27 +34,42 @@ function getSkillDiscoveryRuntimeTarget(
 }
 
 export function registerSkillsHandlers(store: Store): void {
+  const resolveScanContext = async (
+    target?: SkillDiscoveryTarget
+  ): Promise<{ homeDir?: string; cwd?: string; repos: ReturnType<Store['getRepos']> }> => {
+    const runtimeTarget = getSkillDiscoveryRuntimeTarget(target)
+    if (runtimeTarget.runtime === 'wsl') {
+      if (process.platform !== 'win32') {
+        throw new Error('WSL skill discovery is only available on Windows.')
+      }
+      const distro = runtimeTarget.wslDistro?.trim() || getDefaultWslDistro()
+      if (!distro) {
+        throw new Error('No WSL distribution is available for skill discovery.')
+      }
+      const homeDir = getWslHome(distro)
+      if (!homeDir) {
+        throw new Error(`Could not resolve the WSL home directory for ${distro}.`)
+      }
+      return { homeDir, cwd: homeDir, repos: [] }
+    }
+
+    const cwd = target?.cwd?.trim() || undefined
+    return cwd ? { cwd, repos: [] } : { repos: store.getRepos() }
+  }
+
   ipcMain.handle(
     'skills:discover',
     async (_event, target?: SkillDiscoveryTarget): Promise<SkillDiscoveryResult> => {
-      const runtimeTarget = getSkillDiscoveryRuntimeTarget(target)
-      if (runtimeTarget.runtime === 'wsl') {
-        if (process.platform !== 'win32') {
-          throw new Error('WSL skill discovery is only available on Windows.')
-        }
-        const distro = runtimeTarget.wslDistro?.trim() || getDefaultWslDistro()
-        if (!distro) {
-          throw new Error('No WSL distribution is available for skill discovery.')
-        }
-        const homeDir = getWslHome(distro)
-        if (!homeDir) {
-          throw new Error(`Could not resolve the WSL home directory for ${distro}.`)
-        }
-        return discoverSkills({ repos: [], homeDir, cwd: homeDir })
-      }
+      const context = await resolveScanContext(target)
+      return discoverSkills(context)
+    }
+  )
 
-      const cwd = target?.cwd?.trim() || undefined
-      return cwd ? discoverSkills({ repos: [], cwd }) : discoverSkills({ repos: store.getRepos() })
+  ipcMain.handle(
+    'skills:checkFreshness',
+    async (_event, target?: SkillDiscoveryTarget): Promise<SkillFreshnessResult> => {
+      const context = await resolveScanContext(target)
+      return checkOrcaSkillFreshness(context)
     }
   )
 }

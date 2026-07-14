@@ -21,6 +21,7 @@ import {
   GLOBAL_AGENT_SKILL_SOURCE_KINDS,
   useInstalledAgentSkill
 } from '@/hooks/useInstalledAgentSkills'
+import { useOrcaSkillFreshness } from '@/hooks/useOrcaSkillFreshness'
 import { useActiveProjectSkillRuntime } from '@/hooks/useActiveProjectSkillRuntime'
 import {
   buildSkillCommandForRuntime,
@@ -68,6 +69,9 @@ export function EphemeralVmsPane(): React.JSX.Element {
   } = useInstalledAgentSkill(EPHEMERAL_VMS_SKILL_NAME, {
     discoveryTarget: activeSkillRuntime.discoveryTarget,
     sourceKinds: GLOBAL_AGENT_SKILL_SOURCE_KINDS
+  })
+  const { isSkillOutdated } = useOrcaSkillFreshness({
+    discoveryTarget: activeSkillRuntime.discoveryTarget
   })
 
   const refresh = useCallback(async (): Promise<void> => {
@@ -145,6 +149,7 @@ export function EphemeralVmsPane(): React.JSX.Element {
         terminalWorktreeId="settings-ephemeral-vms-skill-terminal"
         terminalShellOverride={activeSkillRuntime.terminalShellOverride}
         installed={skillDetected}
+        outdated={isSkillOutdated(EPHEMERAL_VMS_SKILL_NAME)}
         loading={skillLoading}
         error={activeSkillRuntime.installDisabledReason ?? skillError}
         installDisabled={Boolean(activeSkillRuntime.installDisabledReason)}

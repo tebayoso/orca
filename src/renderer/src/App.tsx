@@ -59,6 +59,7 @@ import RightSidebar from './components/right-sidebar'
 import { StarNagCard } from './components/StarNagCard'
 import { StarNagAgentValueMomentObserver } from './components/star-nag/StarNagAgentValueMomentObserver'
 import { StarNagToastHost } from './components/star-nag/StarNagToastHost'
+import { OutdatedSkillUpdateHost } from './components/skills/OutdatedSkillUpdateHost'
 import { TelemetryFirstLaunchSurface } from './components/TelemetryFirstLaunchSurface'
 import { ZoomOverlay } from './components/ZoomOverlay'
 import { onOnboardingReopened } from './components/onboarding/show-onboarding-event'
@@ -2707,6 +2708,14 @@ function App(): React.JSX.Element {
               compact
             >
               <StarNagToastHost />
+            </RecoverableRenderErrorBoundary>
+            <RecoverableRenderErrorBoundary
+              boundaryId="overlay.outdated-skill-update"
+              surface="overlay"
+              resetKey={activeView}
+              compact
+            >
+              <OutdatedSkillUpdateHost />
             </RecoverableRenderErrorBoundary>
             <StarNagAgentValueMomentObserver />
             {/* Why: the existing-user opt-in banner mounts at App root so it

@@ -12,6 +12,7 @@ import {
   GLOBAL_AGENT_SKILL_SOURCE_KINDS,
   useInstalledAgentSkill
 } from '@/hooks/useInstalledAgentSkills'
+import { useOrcaSkillFreshness } from '@/hooks/useOrcaSkillFreshness'
 import { useActiveProjectSkillRuntime } from '@/hooks/useActiveProjectSkillRuntime'
 import { useAppStore } from '@/store'
 import { AgentSkillSetupPanel } from './AgentSkillSetupPanel'
@@ -45,6 +46,9 @@ export function ComputerUseSkillSetupPanel(): React.JSX.Element {
     discoveryTarget: activeSkillRuntime.discoveryTarget,
     sourceKinds: GLOBAL_AGENT_SKILL_SOURCE_KINDS
   })
+  const { isSkillOutdated } = useOrcaSkillFreshness({
+    discoveryTarget: activeSkillRuntime.discoveryTarget
+  })
 
   return (
     <AgentSkillSetupPanel
@@ -60,6 +64,7 @@ export function ComputerUseSkillSetupPanel(): React.JSX.Element {
       terminalWorktreeId="settings-computer-use-skill-terminal"
       terminalShellOverride={activeSkillRuntime.terminalShellOverride}
       installed={computerUseSkillDetected}
+      outdated={isSkillOutdated(COMPUTER_USE_SKILL_NAME)}
       loading={computerUseSkillLoading}
       error={activeSkillRuntime.installDisabledReason ?? computerUseSkillError}
       installDisabled={Boolean(activeSkillRuntime.installDisabledReason)}

@@ -8,7 +8,9 @@ import {
   ORCHESTRATION_SKILL_UPDATE_COMMAND
 } from '@/lib/orchestration-install-command'
 import type { InstalledAgentSkillState } from '@/hooks/useInstalledAgentSkills'
+import { useOrcaSkillFreshness } from '@/hooks/useOrcaSkillFreshness'
 import { useActiveProjectSkillRuntime } from '@/hooks/useActiveProjectSkillRuntime'
+import { ORCHESTRATION_SKILL_NAME } from '@/lib/agent-feature-install-commands'
 import { AgentSkillSetupPanel } from './AgentSkillSetupPanel'
 import {
   buildSkillCommandForRuntime,
@@ -25,6 +27,9 @@ export function OrchestrationSetupCard(props: {
 }): JSX.Element {
   const { compact, terminalHeightPx, skill } = props
   const activeSkillRuntime = useActiveProjectSkillRuntime()
+  const { isSkillOutdated } = useOrcaSkillFreshness({
+    discoveryTarget: activeSkillRuntime.discoveryTarget
+  })
   const installCommand = !activeSkillRuntime.installDisabledReason
     ? buildSkillCommandForRuntime(
         ORCHESTRATION_SKILL_INSTALL_COMMAND,
@@ -56,6 +61,7 @@ export function OrchestrationSetupCard(props: {
       terminalWorktreeId="feature-wall-orchestration-skill-terminal"
       terminalShellOverride={activeSkillRuntime.terminalShellOverride}
       installed={skill.installed}
+      outdated={isSkillOutdated(ORCHESTRATION_SKILL_NAME)}
       loading={skill.loading}
       error={activeSkillRuntime.installDisabledReason ?? skill.error}
       installDisabled={Boolean(activeSkillRuntime.installDisabledReason)}

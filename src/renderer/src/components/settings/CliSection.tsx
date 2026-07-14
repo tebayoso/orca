@@ -17,6 +17,7 @@ import {
   GLOBAL_AGENT_SKILL_SOURCE_KINDS,
   useInstalledAgentSkill
 } from '@/hooks/useInstalledAgentSkills'
+import { useOrcaSkillFreshness } from '@/hooks/useOrcaSkillFreshness'
 import { useMountedRef } from '@/hooks/useMountedRef'
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
@@ -98,6 +99,9 @@ export function CliSection({
   } = useInstalledAgentSkill(ORCA_CLI_SKILL_NAME, {
     discoveryTarget: cliSkillDiscoveryTarget,
     sourceKinds: GLOBAL_AGENT_SKILL_SOURCE_KINDS
+  })
+  const { isSkillOutdated } = useOrcaSkillFreshness({
+    discoveryTarget: cliSkillDiscoveryTarget
   })
   const cliSkillInstallCommand = buildSkillCommandForRuntime(
     ORCA_CLI_SKILL_INSTALL_COMMAND,
@@ -377,6 +381,7 @@ export function CliSection({
               terminalWorktreeId={`settings-cli-skill-terminal-${agentRuntime.runtime}`}
               terminalShellOverride={cliSkillTerminalShellOverride}
               installed={cliSkillDetected}
+              outdated={isSkillOutdated(ORCA_CLI_SKILL_NAME)}
               loading={cliSkillLoading}
               error={cliSkillError}
               preInstallNotice={AGENT_SKILL_CLI_PREREQUISITE_NOTICE}
