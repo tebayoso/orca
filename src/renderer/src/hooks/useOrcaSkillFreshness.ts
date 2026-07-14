@@ -53,11 +53,21 @@ async function loadSkillFreshness(
     if (cached) {
       return cached
     }
-  }
-
-  const inFlight = pendingFreshnessByTarget.get(key)
-  if (inFlight && !force) {
-    return inFlight
+    const inFlight = pendingFreshnessByTarget.get(key)
+    if (inFlight) {
+      return inFlight
+    }
+  } else {
+    // Why: wait out any in-flight scan for this target so a forced refresh
+    // cannot race an older result writing back over a newer one.
+    const inFlight = pendingFreshnessByTarget.get(key)
+    if (inFlight) {
+      try {
+        await inFlight
+      } catch {
+        // Previous failure should not block an explicit re-check.
+      }
+    }
   }
 
   const request = window.api.skills
