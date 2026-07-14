@@ -42,9 +42,14 @@ export function hashSkillMarkdown(content: string): string {
 async function readSkillMarkdown(skillFilePath: string): Promise<string | null> {
   try {
     const fileStat = await stat(skillFilePath)
+    // Why: prefix hashing two oversized files can false-match as current.
+    // Treat oversized skills as unreadable so status becomes unknown, not current.
+    if (fileStat.size > MAX_SKILL_MARKDOWN_BYTES) {
+      return null
+    }
     const file = await open(skillFilePath, 'r')
     try {
-      const buffer = Buffer.alloc(Math.min(fileStat.size, MAX_SKILL_MARKDOWN_BYTES))
+      const buffer = Buffer.alloc(fileStat.size)
       const { bytesRead } = await file.read(buffer, 0, buffer.length, 0)
       return buffer.toString('utf8', 0, bytesRead)
     } finally {
@@ -109,12 +114,18 @@ async function loadExpectedHashes(referenceRoot: string): Promise<Map<string, st
 function resolveStatus(args: {
   expectedHash: string | null
   installedHash: string | null
+  installed: boolean
 }): SkillFreshnessStatus {
   if (!args.expectedHash) {
     return 'unknown'
   }
-  if (!args.installedHash) {
+  if (!args.installed) {
     return 'missing'
+  }
+  // Why: an installed path that cannot be read is not "missing" — avoid
+  // driving install UX when the skill is present but unreadable.
+  if (!args.installedHash) {
+    return 'unknown'
   }
   return args.expectedHash === args.installedHash ? 'current' : 'outdated'
 }
@@ -145,7 +156,11 @@ export async function checkOrcaSkillFreshness(args?: {
         displayName: definition.displayName,
         settingsSectionId: definition.settingsSectionId,
         updateCommand: definition.updateCommand,
-        status: resolveStatus({ expectedHash, installedHash }),
+        status: resolveStatus({
+          expectedHash,
+          installedHash,
+          installed: installed !== null
+        }),
         expectedHash,
         installedHash,
         installedPath: installed?.skillFilePath ?? null

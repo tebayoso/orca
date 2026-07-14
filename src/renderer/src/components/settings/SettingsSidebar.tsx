@@ -158,7 +158,7 @@ export function SettingsSidebar({
       case 'checking':
         return translate('auto.components.settings.AgentSkillSetupPanel.68a468752e', 'Checking...')
       case 'outdated':
-        return translate('auto.components.settings.SettingsSidebar.skillOutdated', 'Outdated')
+        return translate('auto.components.settings.SettingsSidebar.23b567b459', 'Outdated')
     }
   }
   const installStatusClassName = (status: SettingsNavInstallStatus): string =>

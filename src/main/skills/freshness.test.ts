@@ -95,6 +95,29 @@ describe('checkOrcaSkillFreshness', () => {
     expect(computerUse?.status).toBe('missing')
   })
 
+  it('returns unknown when an installed skill file cannot be hashed', async () => {
+    const referenceRoot = await makeTempDir('orca-skill-ref-')
+    const homeDir = await makeTempDir('orca-skill-home-')
+    await writeSkill(referenceRoot, 'orca-cli', '---\nname: orca-cli\n---\nexpected\n')
+    await mkdir(join(homeDir, '.agents', 'skills', 'orca-cli'), { recursive: true })
+    // Directory where SKILL.md should be — leave it empty so discovery still
+    // finds the skill folder via other roots? Discovery needs SKILL.md present.
+    // Create a skill file then make it unreadable by replacing with a directory.
+    const skillFilePath = join(homeDir, '.agents', 'skills', 'orca-cli', 'SKILL.md')
+    await writeFile(skillFilePath, '---\nname: orca-cli\n---\nbody\n', 'utf8')
+    // Oversized content past the 256 KiB guard.
+    await writeFile(skillFilePath, 'x'.repeat(300 * 1024), 'utf8')
+
+    const result = await checkOrcaSkillFreshness({
+      repos: [],
+      homeDir,
+      referenceRoot
+    })
+
+    const orcaCli = result.skills.find((skill) => skill.skillName === 'orca-cli')
+    expect(orcaCli?.status).toBe('unknown')
+  })
+
   it('ignores repo-local skill copies when deciding global freshness', async () => {
     const referenceRoot = await makeTempDir('orca-skill-ref-')
     const homeDir = await makeTempDir('orca-skill-home-')

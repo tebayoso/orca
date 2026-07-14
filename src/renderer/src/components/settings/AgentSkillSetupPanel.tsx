@@ -205,10 +205,7 @@ export function AgentSkillSetupPanel({
             ? translate('auto.components.settings.AgentSkillSetupPanel.5f818f12ab', 'Preparing...')
             : installed
               ? outdated
-                ? translate(
-                    'auto.components.settings.AgentSkillSetupPanel.updateOutdated',
-                    'Update'
-                  )
+                ? translate('auto.components.settings.AgentSkillSetupPanel.fb91e24fa5', 'Update')
                 : installedInstallLabel
               : installLabel}
         </Button>
@@ -274,7 +271,7 @@ export function AgentSkillSetupPanel({
                 ) : installed && outdated ? (
                   <IntegrationStatusPill tone="attention">
                     {translate(
-                      'auto.components.settings.AgentSkillSetupPanel.outdated',
+                      'auto.components.settings.AgentSkillSetupPanel.23b567b459',
                       'Outdated'
                     )}
                   </IntegrationStatusPill>

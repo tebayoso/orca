@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
 import type { SkillFreshnessEntry } from '../../../../shared/skill-freshness'
@@ -11,6 +10,9 @@ import { translate } from '@/i18n/i18n'
  * Compact bottom-right skill update prompt — same shell and option pattern as
  * UpdateCard's SimpleCardContent: title + dismiss, short body, text link,
  * full-width primary Update.
+ *
+ * Why no global Escape: dismissing persists the expected hash. Stealing Escape
+ * from terminals/search would permanently hide the prompt; users dismiss via X.
  */
 export function OutdatedSkillUpdateDialog(props: {
   skill: SkillFreshnessEntry
@@ -22,37 +24,12 @@ export function OutdatedSkillUpdateDialog(props: {
   // Why: UpdateCard owns bottom-10; raise this card so both remain readable.
   const updateCardVisible = updateStatus.state !== 'idle' && updateStatus.state !== 'not-available'
 
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key !== 'Escape' || event.defaultPrevented) {
-        return
-      }
-      // Why: do not steal Escape from open dialogs, menus, or text fields.
-      const target = event.target
-      if (
-        target instanceof HTMLElement &&
-        (target.closest('[role="dialog"]') ||
-          target.closest('[role="menu"]') ||
-          target.isContentEditable ||
-          target.tagName === 'INPUT' ||
-          target.tagName === 'TEXTAREA' ||
-          target.tagName === 'SELECT')
-      ) {
-        return
-      }
-      event.preventDefault()
-      onDismiss()
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [onDismiss])
-
   const copyCommand = async (): Promise<void> => {
     try {
       await window.api.ui.writeClipboardText(skill.updateCommand)
       toast.success(
         translate(
-          'auto.components.skills.OutdatedSkillUpdateDialog.copied',
+          'auto.components.skills.OutdatedSkillUpdateDialog.7a5f26c79f',
           'Copied update command.'
         )
       )
@@ -61,7 +38,7 @@ export function OutdatedSkillUpdateDialog(props: {
         error instanceof Error
           ? error.message
           : translate(
-              'auto.components.skills.OutdatedSkillUpdateDialog.copyFailed',
+              'auto.components.skills.OutdatedSkillUpdateDialog.7e6c0adbca',
               'Failed to copy update command.'
             )
       )
@@ -83,7 +60,7 @@ export function OutdatedSkillUpdateDialog(props: {
           <div className="flex items-start justify-between gap-2">
             <h3 id="outdated-skill-update-heading" className="text-sm font-semibold">
               {translate(
-                'auto.components.skills.OutdatedSkillUpdateDialog.title',
+                'auto.components.skills.OutdatedSkillUpdateDialog.556eab4c6f',
                 'Your Orca skills are outdated'
               )}
             </h3>
@@ -93,7 +70,7 @@ export function OutdatedSkillUpdateDialog(props: {
               className="size-7 min-h-[44px] min-w-[44px] shrink-0 -m-2"
               onClick={onDismiss}
               aria-label={translate(
-                'auto.components.skills.OutdatedSkillUpdateDialog.dismissAria',
+                'auto.components.skills.OutdatedSkillUpdateDialog.c04888cdf5',
                 'Dismiss skill update'
               )}
             >
@@ -103,7 +80,7 @@ export function OutdatedSkillUpdateDialog(props: {
 
           <p className="text-sm text-muted-foreground">
             {translate(
-              'auto.components.skills.OutdatedSkillUpdateDialog.readyLine',
+              'auto.components.skills.OutdatedSkillUpdateDialog.ffa78ad9cf',
               'The {{skillName}} skill needs an update.',
               { skillName: skill.displayName }
             )}
@@ -111,7 +88,7 @@ export function OutdatedSkillUpdateDialog(props: {
 
           <p className="text-xs leading-relaxed text-muted-foreground">
             {translate(
-              'auto.components.skills.OutdatedSkillUpdateDialog.hint',
+              'auto.components.skills.OutdatedSkillUpdateDialog.f37228fd6f',
               'Update them so agents keep the latest Orca workflows.'
             )}
           </p>
@@ -122,7 +99,7 @@ export function OutdatedSkillUpdateDialog(props: {
             onClick={() => void copyCommand()}
           >
             {translate(
-              'auto.components.skills.OutdatedSkillUpdateDialog.copyCommand',
+              'auto.components.skills.OutdatedSkillUpdateDialog.d2ce485b34',
               'Copy update command'
             )}
           </button>
@@ -134,7 +111,7 @@ export function OutdatedSkillUpdateDialog(props: {
             onClick={onUpdate}
             className="mt-0.5 w-full cursor-pointer"
           >
-            {translate('auto.components.skills.OutdatedSkillUpdateDialog.update', 'Update')}
+            {translate('auto.components.skills.OutdatedSkillUpdateDialog.fb91e24fa5', 'Update')}
           </Button>
         </div>
       </Card>
