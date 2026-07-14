@@ -39,10 +39,11 @@ export function OutdatedSkillUpdateHost(): React.JSX.Element | null {
   }, [activeSkillName, promptQueue])
 
   useEffect(() => {
-    if (loading || promptQueue.length === 0) {
-      if (!loading && promptQueue.length === 0) {
-        setActiveSkillName(null)
-      }
+    if (loading) {
+      return
+    }
+    if (promptQueue.length === 0) {
+      setActiveSkillName(null)
       return
     }
     setActiveSkillName((current) => {

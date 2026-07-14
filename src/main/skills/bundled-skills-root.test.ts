@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -16,6 +16,7 @@ describe('resolveBundledSkillsRoot', () => {
   const created: string[] = []
 
   afterEach(async () => {
+    await Promise.all(created.map((dir) => rm(dir, { recursive: true, force: true })))
     created.length = 0
   })
 

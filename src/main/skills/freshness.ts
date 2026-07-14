@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
-import { open, readdir, stat } from 'node:fs/promises'
-import { join } from 'node:path'
+import { open, readdir } from 'node:fs/promises'
+import { basename, join } from 'node:path'
 import { ORCA_MANAGED_SKILLS } from '../../shared/orca-managed-skills'
 import type {
   SkillFreshnessEntry,
@@ -19,17 +19,6 @@ function normalizeSkillName(value: string): string {
   return value.trim().toLowerCase()
 }
 
-function basenameFromPath(pathValue: string): string {
-  const segments = pathValue.split(/[\\/]/)
-  for (let index = segments.length - 1; index >= 0; index -= 1) {
-    const segment = segments[index]
-    if (segment) {
-      return segment
-    }
-  }
-  return pathValue
-}
-
 /** Normalize line endings so macOS/Windows installs hash the same content. */
 export function normalizeSkillMarkdownForHash(content: string): string {
   return content.replace(/\r\n/g, '\n')
@@ -41,17 +30,28 @@ export function hashSkillMarkdown(content: string): string {
 
 async function readSkillMarkdown(skillFilePath: string): Promise<string | null> {
   try {
-    const fileStat = await stat(skillFilePath)
-    // Why: prefix hashing two oversized files can false-match as current.
-    // Treat oversized skills as unreadable so status becomes unknown, not current.
-    if (fileStat.size > MAX_SKILL_MARKDOWN_BYTES) {
-      return null
-    }
     const file = await open(skillFilePath, 'r')
     try {
-      const buffer = Buffer.alloc(fileStat.size)
-      const { bytesRead } = await file.read(buffer, 0, buffer.length, 0)
-      return buffer.toString('utf8', 0, bytesRead)
+      // Why: FileHandle.read may return short reads; loop to EOF. Cap at
+      // MAX+1 so oversized skills are rejected instead of prefix-hashed.
+      const buffer = Buffer.alloc(MAX_SKILL_MARKDOWN_BYTES + 1)
+      let totalBytesRead = 0
+      while (totalBytesRead < buffer.length) {
+        const { bytesRead } = await file.read(
+          buffer,
+          totalBytesRead,
+          buffer.length - totalBytesRead,
+          totalBytesRead
+        )
+        if (bytesRead === 0) {
+          break
+        }
+        totalBytesRead += bytesRead
+      }
+      if (totalBytesRead > MAX_SKILL_MARKDOWN_BYTES) {
+        return null
+      }
+      return buffer.toString('utf8', 0, totalBytesRead)
     } finally {
       await file.close()
     }
@@ -69,7 +69,7 @@ function skillMatchesManagedName(skill: DiscoveredSkill, skillName: string): boo
   const expected = normalizeSkillName(skillName)
   return (
     normalizeSkillName(skill.name) === expected ||
-    normalizeSkillName(basenameFromPath(skill.directoryPath)) === expected
+    normalizeSkillName(basename(skill.directoryPath)) === expected
   )
 }
 

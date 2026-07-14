@@ -20,6 +20,7 @@ export function OutdatedSkillUpdateDialog(props: {
   onUpdate: () => void
 }): React.JSX.Element {
   const { skill, onDismiss, onUpdate } = props
+  const headingId = `outdated-skill-update-heading-${skill.skillName}`
   const updateStatus = useAppStore((s) => s.updateStatus)
   // Why: UpdateCard owns bottom-10; raise this card so both remain readable.
   const updateCardVisible = updateStatus.state !== 'idle' && updateStatus.state !== 'not-available'
@@ -51,14 +52,10 @@ export function OutdatedSkillUpdateDialog(props: {
         updateCardVisible ? 'bottom-[220px]' : 'bottom-10'
       }`}
     >
-      <Card
-        className="gap-0 py-0"
-        role="complementary"
-        aria-labelledby="outdated-skill-update-heading"
-      >
+      <Card className="gap-0 py-0" role="complementary" aria-labelledby={headingId}>
         <div className="flex flex-col gap-2.5 p-3.5">
           <div className="flex items-start justify-between gap-2">
-            <h3 id="outdated-skill-update-heading" className="text-sm font-semibold">
+            <h3 id={headingId} className="text-sm font-semibold">
               {translate(
                 'auto.components.skills.OutdatedSkillUpdateDialog.556eab4c6f',
                 'Your Orca skills are outdated'
