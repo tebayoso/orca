@@ -8,7 +8,7 @@ export type SkillFreshnessEntry = {
   settingsSectionId: OrcaManagedSkillSettingsSectionId
   updateCommand: string
   status: SkillFreshnessStatus
-  /** sha256 of the app-bundled SKILL.md (expected). */
+  /** sha256 of the release catalog SKILL.md (expected). */
   expectedHash: string | null
   /**
    * Hash used for prompt identity. When outdated, this is the first diverging
@@ -24,6 +24,9 @@ export type SkillFreshnessEntry = {
 export type SkillFreshnessResult = {
   skills: SkillFreshnessEntry[]
   scannedAt: number
-  /** Absolute path to the reference skills root used for expected hashes. */
+  /**
+   * Absolute path to a test-only reference skills root, if one was provided.
+   * Production scans always use the generated hash catalog (`null` here).
+   */
   referenceRoot: string | null
 }

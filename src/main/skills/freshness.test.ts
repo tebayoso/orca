@@ -2,6 +2,8 @@ import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
+import { ORCA_MANAGED_SKILLS } from '../../shared/orca-managed-skills'
+import { ORCA_SKILL_REFERENCE_HASHES } from '../../shared/orca-skill-reference-hashes.generated'
 import {
   checkOrcaSkillFreshness,
   hashSkillMarkdown,
@@ -16,6 +18,7 @@ afterEach(async () => {
 })
 
 async function makeTempDir(prefix: string): Promise<string> {
+  // Why: all fixtures live under os.tmpdir — never write into repo skills/ or real ~/.agents.
   const dir = await mkdtemp(join(tmpdir(), prefix))
   tempDirs.push(dir)
   return dir
@@ -34,6 +37,18 @@ describe('skill freshness hashing', () => {
     expect(hashSkillMarkdown('a\r\nb\n')).toBe(hashSkillMarkdown('a\nb\n'))
     expect(hashSkillMarkdown('\uFEFFhello\n')).toBe(hashSkillMarkdown('hello\n'))
     expect(normalizeSkillMarkdownForHash('\uFEFFx\r\ny')).toBe('x\ny')
+  })
+})
+
+describe('managed skill catalog contract', () => {
+  it('pins every managed skill to a generated reference hash (no packaging of skills/)', () => {
+    const catalogNames = new Set(Object.keys(ORCA_SKILL_REFERENCE_HASHES))
+    for (const skill of ORCA_MANAGED_SKILLS) {
+      expect(catalogNames.has(skill.skillName)).toBe(true)
+      expect(ORCA_SKILL_REFERENCE_HASHES[skill.skillName]).toMatch(/^[a-f0-9]{64}$/)
+    }
+    // Why: catalog must not grow beyond the update-wired managed set.
+    expect(catalogNames.size).toBe(ORCA_MANAGED_SKILLS.length)
   })
 })
 
@@ -126,9 +141,9 @@ describe('checkOrcaSkillFreshness', () => {
       '---\nname: orca-cli\n---\nstale\n'
     )
 
+    // Why: homeDir is empty of installs; repoDir is never scanned.
     const result = await checkOrcaSkillFreshness({
       homeDir,
-      cwd: repoDir,
       referenceRoot
     })
 
@@ -136,7 +151,21 @@ describe('checkOrcaSkillFreshness', () => {
     expect(orcaCli?.status).toBe('missing')
   })
 
-  it('flags outdated when any home provider copy diverges (M2)', async () => {
+  it('uses the generated catalog when no referenceRoot is provided', async () => {
+    const homeDir = await makeTempDir('orca-skill-home-')
+    await mkdir(join(homeDir, '.agents', 'skills'), { recursive: true })
+
+    const result = await checkOrcaSkillFreshness({ homeDir })
+
+    expect(result.referenceRoot).toBeNull()
+    expect(result.skills.map((skill) => skill.skillName).sort()).toEqual(
+      ORCA_MANAGED_SKILLS.map((skill) => skill.skillName).sort()
+    )
+    expect(result.skills.every((skill) => skill.expectedHash !== null)).toBe(true)
+    expect(result.skills.every((skill) => skill.status === 'missing')).toBe(true)
+  })
+
+  it('flags outdated when any home provider copy diverges', async () => {
     const referenceRoot = await makeTempDir('orca-skill-ref-')
     const homeDir = await makeTempDir('orca-skill-home-')
     const content = '---\nname: orca-cli\n---\nreference\n'

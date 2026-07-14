@@ -698,11 +698,10 @@ function Settings(): React.JSX.Element {
       ]
     ])
     // Apply outdated badges generically from freshness section ids.
+    // Managed set is CLI / orchestration / computer-use / ephemeral only.
     for (const sectionId of outdatedSectionIds) {
-      if (sectionId === 'computer-use' || sectionId === 'mobile-emulator') {
-        if (!showDesktopOnlySettings) {
-          continue
-        }
+      if (sectionId === 'computer-use' && !showDesktopOnlySettings) {
+        continue
       }
       if (sectionId === 'orchestration') {
         continue

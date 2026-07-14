@@ -1,18 +1,34 @@
 import { createHash } from 'node:crypto'
 import { open, readdir } from 'node:fs/promises'
-import { basename, join } from 'node:path'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
 import { ORCA_MANAGED_SKILLS } from '../../shared/orca-managed-skills'
+import { ORCA_SKILL_REFERENCE_HASHES } from '../../shared/orca-skill-reference-hashes.generated'
 import type {
   SkillFreshnessEntry,
   SkillFreshnessResult,
   SkillFreshnessStatus
 } from '../../shared/skill-freshness'
-import { discoverSkills } from './discovery'
-import { resolveBundledSkillsRoot } from './bundled-skills-root'
-import type { DiscoveredSkill } from '../../shared/skills'
 
 const SKILL_FILE_NAME = 'SKILL.md'
 const MAX_SKILL_MARKDOWN_BYTES = 256 * 1024
+
+/**
+ * Home provider skill directories that `npx skills add --global` writes into.
+ * Why private to freshness: do not expand Skills-page discovery roots; only
+ * probe managed skill basenames under these paths.
+ */
+const HOME_SKILL_DIR_SEGMENTS: readonly (readonly string[])[] = [
+  ['.agents', 'skills'],
+  ['.claude', 'skills'],
+  ['.codex', 'skills'],
+  ['.grok', 'skills'],
+  ['.config', 'opencode', 'skills'],
+  ['.pi', 'agent', 'skills'],
+  ['.gemini', 'skills'],
+  ['.gemini', 'antigravity', 'skills'],
+  ['.cursor', 'skills']
+]
 
 function normalizeSkillName(value: string): string {
   return value.trim().toLowerCase()
@@ -28,62 +44,61 @@ export function hashSkillMarkdown(content: string): string {
   return createHash('sha256').update(normalizeSkillMarkdownForHash(content), 'utf8').digest('hex')
 }
 
-async function readSkillMarkdown(skillFilePath: string): Promise<string | null> {
+type SkillFileHashOutcome =
+  | { kind: 'missing' }
+  | { kind: 'unreadable' }
+  | { kind: 'ok'; hash: string }
+
+async function inspectSkillFile(skillFilePath: string): Promise<SkillFileHashOutcome> {
+  let file
   try {
-    const file = await open(skillFilePath, 'r')
-    try {
-      // Why: FileHandle.read may return short reads; loop to EOF. Cap at
-      // MAX+1 so oversized skills are rejected instead of prefix-hashed.
-      const buffer = Buffer.alloc(MAX_SKILL_MARKDOWN_BYTES + 1)
-      let totalBytesRead = 0
-      while (totalBytesRead < buffer.length) {
-        const { bytesRead } = await file.read(
-          buffer,
-          totalBytesRead,
-          buffer.length - totalBytesRead,
-          totalBytesRead
-        )
-        if (bytesRead === 0) {
-          break
-        }
-        totalBytesRead += bytesRead
-      }
-      if (totalBytesRead > MAX_SKILL_MARKDOWN_BYTES) {
-        return null
-      }
-      return buffer.toString('utf8', 0, totalBytesRead)
-    } finally {
-      await file.close()
-    }
+    file = await open(skillFilePath, 'r')
   } catch {
-    return null
+    return { kind: 'missing' }
+  }
+
+  try {
+    // Why: FileHandle.read may return short reads; loop to EOF. Cap at
+    // MAX+1 so oversized skills are rejected instead of prefix-hashed.
+    const buffer = Buffer.alloc(MAX_SKILL_MARKDOWN_BYTES + 1)
+    let totalBytesRead = 0
+    while (totalBytesRead < buffer.length) {
+      const { bytesRead } = await file.read(
+        buffer,
+        totalBytesRead,
+        buffer.length - totalBytesRead,
+        totalBytesRead
+      )
+      if (bytesRead === 0) {
+        break
+      }
+      totalBytesRead += bytesRead
+    }
+    if (totalBytesRead > MAX_SKILL_MARKDOWN_BYTES) {
+      return { kind: 'unreadable' }
+    }
+    const content = buffer.toString('utf8', 0, totalBytesRead)
+    return { kind: 'ok', hash: hashSkillMarkdown(content) }
+  } catch {
+    return { kind: 'unreadable' }
+  } finally {
+    await file.close()
   }
 }
 
-async function hashSkillFile(skillFilePath: string): Promise<string | null> {
-  const content = await readSkillMarkdown(skillFilePath)
-  return content === null ? null : hashSkillMarkdown(content)
+function loadCatalogExpectedHashes(): Map<string, string> {
+  const hashes = new Map<string, string>()
+  for (const [skillName, hash] of Object.entries(ORCA_SKILL_REFERENCE_HASHES)) {
+    hashes.set(normalizeSkillName(skillName), hash)
+  }
+  return hashes
 }
 
-function skillMatchesManagedName(skill: DiscoveredSkill, skillName: string): boolean {
-  // Why: match install identity (directory basename) only — frontmatter name
-  // collisions with user forks would otherwise drive overwrite prompts.
-  return normalizeSkillName(basename(skill.directoryPath)) === normalizeSkillName(skillName)
-}
-
-function listInstalledHomeSkills(
-  skills: readonly DiscoveredSkill[],
-  skillName: string
-): DiscoveredSkill[] {
-  // Why: `npx skills add --global` writes into each agent's home skills dir
-  // (~/.agents, ~/.claude, ~/.codex, …). Any diverging home copy must count.
-  return skills.filter(
-    (skill) =>
-      skill.installed && skill.sourceKind === 'home' && skillMatchesManagedName(skill, skillName)
-  )
-}
-
-async function loadExpectedHashes(referenceRoot: string): Promise<Map<string, string>> {
+/**
+ * Test-only override: load expected hashes from a temp skills tree.
+ * Production always uses the generated catalog — never the repo skills/ tree.
+ */
+async function loadExpectedHashesFromRoot(referenceRoot: string): Promise<Map<string, string>> {
   const hashes = new Map<string, string>()
   let entries: string[] = []
   try {
@@ -95,13 +110,20 @@ async function loadExpectedHashes(referenceRoot: string): Promise<Map<string, st
   await Promise.all(
     entries.map(async (entryName) => {
       const skillFilePath = join(referenceRoot, entryName, SKILL_FILE_NAME)
-      const hash = await hashSkillFile(skillFilePath)
-      if (hash) {
-        hashes.set(normalizeSkillName(entryName), hash)
+      const outcome = await inspectSkillFile(skillFilePath)
+      if (outcome.kind === 'ok') {
+        hashes.set(normalizeSkillName(entryName), outcome.hash)
       }
     })
   )
   return hashes
+}
+
+/** Resolve installed managed-skill paths under home provider skill roots only. */
+function listManagedHomeSkillPaths(homeDir: string, skillName: string): string[] {
+  return HOME_SKILL_DIR_SEGMENTS.map((segments) =>
+    join(homeDir, ...segments, skillName, SKILL_FILE_NAME)
+  )
 }
 
 function resolveStatus(args: {
@@ -128,35 +150,42 @@ function resolveStatus(args: {
 
 export async function checkOrcaSkillFreshness(args?: {
   homeDir?: string
+  /**
+   * Optional temp skills root for unit tests. When omitted, expected hashes
+   * come from ORCA_SKILL_REFERENCE_HASHES (no packaged skills/ tree).
+   */
   referenceRoot?: string | null
 }): Promise<SkillFreshnessResult> {
-  const referenceRoot =
-    args?.referenceRoot === undefined ? resolveBundledSkillsRoot() : args.referenceRoot
-  const expectedHashes = referenceRoot ? await loadExpectedHashes(referenceRoot) : new Map()
+  // Why: never read process.resourcesPath/orca-skills or repo skills/ at runtime.
+  const referenceRoot = args?.referenceRoot ?? null
+  const expectedHashes =
+    referenceRoot === null
+      ? loadCatalogExpectedHashes()
+      : await loadExpectedHashesFromRoot(referenceRoot)
 
-  // Why: freshness only cares about home installs. Skip repo/cwd walks.
-  const discovery = await discoverSkills({
-    repos: [],
-    homeDir: args?.homeDir,
-    includeProjectRoots: false
-  })
+  // Why: only probe known managed basenames under home skill roots — no repo/cwd
+  // walks and no full skill-discovery scan (avoids mutating discovery sources).
+  const homeDir = args?.homeDir ?? homedir()
 
   const skills = await Promise.all(
     ORCA_MANAGED_SKILLS.map(async (definition) => {
       const expectedHash = expectedHashes.get(normalizeSkillName(definition.skillName)) ?? null
-      const homeInstalls = listInstalledHomeSkills(discovery.skills, definition.skillName)
-      const hashed = await Promise.all(
-        homeInstalls.map(async (install) => ({
-          path: install.skillFilePath,
-          hash: await hashSkillFile(install.skillFilePath)
+      const candidatePaths = listManagedHomeSkillPaths(homeDir, definition.skillName)
+      const inspected = await Promise.all(
+        candidatePaths.map(async (skillFilePath) => ({
+          path: skillFilePath,
+          outcome: await inspectSkillFile(skillFilePath)
         }))
       )
-      const readable = hashed.filter((entry) => entry.hash !== null)
-      const diverging = readable.filter(
-        (entry) => expectedHash !== null && entry.hash !== expectedHash
+      const installed = inspected.filter((entry) => entry.outcome.kind !== 'missing')
+      const readable = inspected.filter(
+        (entry): entry is { path: string; outcome: { kind: 'ok'; hash: string } } =>
+          entry.outcome.kind === 'ok'
       )
-      const primary = diverging[0] ??
-        readable[0] ?? { path: homeInstalls[0]?.skillFilePath ?? null, hash: null }
+      const diverging = readable.filter(
+        (entry) => expectedHash !== null && entry.outcome.hash !== expectedHash
+      )
+      const primary = diverging[0] ?? readable[0]
 
       return {
         skillName: definition.skillName,
@@ -165,13 +194,13 @@ export async function checkOrcaSkillFreshness(args?: {
         updateCommand: definition.updateCommand,
         status: resolveStatus({
           expectedHash,
-          installedCount: homeInstalls.length,
+          installedCount: installed.length,
           readableCount: readable.length,
           divergingCount: diverging.length
         }),
         expectedHash,
-        installedHash: primary.hash,
-        installedPath: primary.path,
+        installedHash: primary?.outcome.hash ?? null,
+        installedPath: primary?.path ?? installed[0]?.path ?? null,
         divergingPaths: diverging.map((entry) => entry.path)
       } satisfies SkillFreshnessEntry
     })

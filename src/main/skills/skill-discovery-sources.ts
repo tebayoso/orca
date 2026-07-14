@@ -25,12 +25,10 @@ export function buildSkillDiscoverySources(
     homeDir?: string
     cwd?: string
     repos?: Repo[]
-    /** When false, skip repo/cwd project roots (used by global skill freshness). */
-    includeProjectRoots?: boolean
   } = {}
 ): SkillScanRoot[] {
   const home = args.homeDir ?? homedir()
-  const includeProjectRoots = args.includeProjectRoots !== false
+  const cwd = args.cwd ?? process.cwd()
   const roots: SkillScanRoot[] = [
     source('home-codex', 'Codex home', join(home, '.codex', 'skills'), 'home', ['codex']),
     source('home-agents', 'Agent skills home', join(home, '.agents', 'skills'), 'home', [
@@ -43,30 +41,9 @@ export function buildSkillDiscoverySources(
       join(home, '.codex', 'plugins', 'cache'),
       'plugin',
       ['codex', 'agent-skills']
-    ),
-    // Why: `npx skills add --global` writes into each agent's own home skills
-    // directory, so coverage misses them unless we scan every provider root.
-    source('home-grok', 'Grok home', join(home, '.grok', 'skills'), 'home', ['agent-skills']),
-    source('home-opencode', 'OpenCode home', join(home, '.config', 'opencode', 'skills'), 'home', [
-      'agent-skills'
-    ]),
-    source('home-pi', 'Pi home', join(home, '.pi', 'agent', 'skills'), 'home', ['agent-skills']),
-    source('home-gemini', 'Gemini home', join(home, '.gemini', 'skills'), 'home', ['agent-skills']),
-    source(
-      'home-antigravity',
-      'Antigravity home',
-      join(home, '.gemini', 'antigravity', 'skills'),
-      'home',
-      ['agent-skills']
-    ),
-    source('home-cursor', 'Cursor home', join(home, '.cursor', 'skills'), 'home', ['agent-skills'])
+    )
   ]
 
-  if (!includeProjectRoots) {
-    return roots
-  }
-
-  const cwd = args.cwd ?? process.cwd()
   const projectPaths = new Set<string>()
   for (const repo of args.repos ?? []) {
     if (repo.connectionId) {

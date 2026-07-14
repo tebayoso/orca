@@ -234,7 +234,6 @@ export async function discoverSkills(args: {
   repos?: Repo[]
   homeDir?: string
   cwd?: string
-  includeProjectRoots?: boolean
 }): Promise<SkillDiscoveryResult> {
   const roots = buildSkillDiscoverySources(args)
   const sources: SkillDiscoverySource[] = []
