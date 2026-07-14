@@ -1,0 +1,29 @@
+config/scripts/generate-orca-skill-reference-hashes.mjs
+  s_7fa2d8569ffa31::t_bcf45c7cea7e2c 85-94,96,105-118
+src/renderer/src/components/settings/CliSection.tsx
+  s_7fa2d8569ffa31::t_0fdeb8a00c2c60 375-378
+src/renderer/src/components/settings/ComputerUseSkillSetupPanel.tsx
+  s_7fa2d8569ffa31::t_91bd6435bde12b 86-87
+src/renderer/src/components/settings/EphemeralVmsPane.tsx
+  s_7fa2d8569ffa31::t_489aa1ff0905f3 170-171
+src/renderer/src/components/settings/OrchestrationSetupCard.tsx
+  s_7fa2d8569ffa31::t_eb0bd725e89cca 83-84
+src/renderer/src/components/skills/OutdatedSkillUpdateDialog.tsx
+  s_7fa2d8569ffa31::t_2d8692674ec705 26-28,30,55
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.13",
+  "base_commit_sha": "5d16419ce3355f4c42da823f4713436d695c6e53",
+  "prompts": {},
+  "sessions": {
+    "s_7fa2d8569ffa31": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ef5ebd94-a966-49f8-bb01-d2a1f91b972b",
+        "model": "unknown"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
