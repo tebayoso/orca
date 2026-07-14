@@ -48,6 +48,10 @@ function getSkillDiscoveryTargetKey(target: SkillDiscoveryTarget | undefined): s
   return 'host'
 }
 
+function isRepairRequiredTarget(target: SkillDiscoveryTarget | undefined): boolean {
+  return target?.projectRuntime?.status === 'repair-required'
+}
+
 async function startFreshnessRequest(
   key: string,
   target?: SkillDiscoveryTarget
@@ -144,9 +148,13 @@ export function useOrcaSkillFreshness(options?: {
   const refresh = useCallback(async (): Promise<SkillFreshnessResult | null> => {
     const generation = ++generationRef.current
     const requestTargetKey = discoveryTargetKey
-    if (!enabled) {
+    if (!enabled || isRepairRequiredTarget(discoveryTarget)) {
       if (mountedRef.current) {
         setLoading(false)
+        if (isRepairRequiredTarget(discoveryTarget)) {
+          setResult(null)
+          setError(null)
+        }
       }
       return null
     }
@@ -187,7 +195,14 @@ export function useOrcaSkillFreshness(options?: {
   }, [discoveryTarget, discoveryTargetKey, enabled, mountedRef])
 
   useEffect(() => {
-    if (!enabled) {
+    if (!enabled || isRepairRequiredTarget(discoveryTarget)) {
+      if (mountedRef.current) {
+        setLoading(false)
+        if (isRepairRequiredTarget(discoveryTarget)) {
+          setResult(null)
+          setError(null)
+        }
+      }
       return
     }
     void loadSkillFreshness(false, discoveryTarget)

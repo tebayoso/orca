@@ -164,14 +164,14 @@ export function EphemeralVmsPane(): React.JSX.Element {
             : window.api.cli.getInstallStatus()
         }
         onBeforeOpenTerminal={async () => {
+          await (activeSkillRuntime.agentRuntime?.runtime === 'wsl'
+            ? ensureWslCliAvailableForAgentSkillTerminal(activeSkillRuntime.agentRuntime)
+            : ensureOrcaCliAvailableForAgentSkillTerminal())
           markOutdatedSkillUpdateAttemptIfNeeded(
             EPHEMERAL_VMS_SKILL_NAME,
             isSkillOutdated(EPHEMERAL_VMS_SKILL_NAME),
             getSkillEntry(EPHEMERAL_VMS_SKILL_NAME)?.expectedHash
           )
-          await (activeSkillRuntime.agentRuntime?.runtime === 'wsl'
-            ? ensureWslCliAvailableForAgentSkillTerminal(activeSkillRuntime.agentRuntime)
-            : ensureOrcaCliAvailableForAgentSkillTerminal())
         }}
         onRecheck={refreshSkill}
       />

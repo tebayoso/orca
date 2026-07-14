@@ -79,15 +79,15 @@ export function ComputerUseSkillSetupPanel(): React.JSX.Element {
           : window.api.cli.getInstallStatus()
       }
       onBeforeOpenTerminal={async () => {
+        useAppStore.getState().recordFeatureInteraction('computer-use-setup')
+        await (activeSkillRuntime.agentRuntime?.runtime === 'wsl'
+          ? ensureWslCliAvailableForAgentSkillTerminal(activeSkillRuntime.agentRuntime)
+          : ensureOrcaCliAvailableForAgentSkillTerminal())
         markOutdatedSkillUpdateAttemptIfNeeded(
           COMPUTER_USE_SKILL_NAME,
           isSkillOutdated(COMPUTER_USE_SKILL_NAME),
           getSkillEntry(COMPUTER_USE_SKILL_NAME)?.expectedHash
         )
-        useAppStore.getState().recordFeatureInteraction('computer-use-setup')
-        await (activeSkillRuntime.agentRuntime?.runtime === 'wsl'
-          ? ensureWslCliAvailableForAgentSkillTerminal(activeSkillRuntime.agentRuntime)
-          : ensureOrcaCliAvailableForAgentSkillTerminal())
       }}
       onRecheck={refreshComputerUseSkill}
     />

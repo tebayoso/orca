@@ -5,6 +5,7 @@ import { useOrcaSkillFreshness } from '@/hooks/useOrcaSkillFreshness'
 import { useAppStore } from '@/store'
 import {
   dismissOutdatedSkillForHash,
+  markOutdatedSkillUpdateAttempted,
   shouldPromptOutdatedSkill,
   snoozeOutdatedSkillForSession
 } from './outdated-skill-reminder'
@@ -88,8 +89,9 @@ export function OutdatedSkillUpdateHost(): React.JSX.Element | null {
       repoId: null
     })
     openSettingsPage()
-    // Why: only session-snooze here. Permanent "update attempted" is recorded
-    // when the Settings panel actually opens the update terminal command.
+    // Why: record for every managed skill (including Linear/emulator surfaces
+    // that only copy a command). Terminal panels also mark after prereqs pass.
+    markOutdatedSkillUpdateAttempted(activeSkill.skillName, activeSkill.expectedHash)
     snoozeOutdatedSkillForSession(activeSkill.skillName)
     suppressCurrent(activeSkill.skillName)
   }, [activeSkill, openSettingsPage, openSettingsTarget, suppressCurrent])

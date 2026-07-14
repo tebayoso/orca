@@ -367,16 +367,18 @@ export function CliSection({
               getPrerequisiteStatus={getCliSkillPrerequisiteStatus}
               isPrerequisiteAvailable={isOrcaCliAvailableOnPath}
               onBeforeOpenTerminal={async () => {
-                markOutdatedSkillUpdateAttemptIfNeeded(
-                  ORCA_CLI_SKILL_NAME,
-                  isSkillOutdated(ORCA_CLI_SKILL_NAME),
-                  getSkillEntry(ORCA_CLI_SKILL_NAME)?.expectedHash
-                )
                 await (agentRuntime.runtime === 'wsl'
                   ? ensureWslCliAvailableForAgentSkillTerminal(agentRuntime)
                   : ensureOrcaCliAvailableForAgentSkillTerminal({
                       onStatusChange: handleStatusChange
                     }))
+                // Why: mark only after prereqs succeed so a failed ensure does
+                // not suppress prompts for the whole app release.
+                markOutdatedSkillUpdateAttemptIfNeeded(
+                  ORCA_CLI_SKILL_NAME,
+                  isSkillOutdated(ORCA_CLI_SKILL_NAME),
+                  getSkillEntry(ORCA_CLI_SKILL_NAME)?.expectedHash
+                )
               }}
               onRecheck={refreshCliSkill}
             />

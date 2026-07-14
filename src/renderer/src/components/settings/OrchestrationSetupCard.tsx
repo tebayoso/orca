@@ -76,15 +76,15 @@ export function OrchestrationSetupCard(props: {
           : window.api.cli.getInstallStatus()
       }
       onBeforeOpenTerminal={async () => {
+        useAppStore.getState().recordFeatureInteraction('agent-orchestration-setup')
+        await (activeSkillRuntime.agentRuntime?.runtime === 'wsl'
+          ? ensureWslCliAvailableForAgentSkillTerminal(activeSkillRuntime.agentRuntime)
+          : ensureOrcaCliAvailableForAgentSkillTerminal())
         markOutdatedSkillUpdateAttemptIfNeeded(
           ORCHESTRATION_SKILL_NAME,
           isSkillOutdated(ORCHESTRATION_SKILL_NAME),
           getSkillEntry(ORCHESTRATION_SKILL_NAME)?.expectedHash
         )
-        useAppStore.getState().recordFeatureInteraction('agent-orchestration-setup')
-        await (activeSkillRuntime.agentRuntime?.runtime === 'wsl'
-          ? ensureWslCliAvailableForAgentSkillTerminal(activeSkillRuntime.agentRuntime)
-          : ensureOrcaCliAvailableForAgentSkillTerminal())
       }}
       onRecheck={skill.refresh}
     />
