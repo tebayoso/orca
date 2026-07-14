@@ -143,7 +143,29 @@ export function useOrcaSkillFreshness(options?: {
   const [error, setError] = useState<string | null>(null)
   const generationRef = useRef(0)
   const currentTargetKeyRef = useRef(discoveryTargetKey)
-  currentTargetKeyRef.current = discoveryTargetKey
+  const stateResetInputRef = useRef({ discoveryTargetKey, enabled })
+  // Why: host→WSL (or project runtime) switches must not keep the previous
+  // target's result while the new scan is in flight (CodeRabbit).
+  if (
+    stateResetInputRef.current.discoveryTargetKey !== discoveryTargetKey ||
+    stateResetInputRef.current.enabled !== enabled
+  ) {
+    const nextCached = cachedFreshnessByTarget.get(discoveryTargetKey) ?? null
+    const nextLoading = enabled && !isRepairRequiredTarget(discoveryTarget) && !nextCached
+    stateResetInputRef.current = { discoveryTargetKey, enabled }
+    currentTargetKeyRef.current = discoveryTargetKey
+    if (result !== nextCached) {
+      setResult(nextCached)
+    }
+    if (loading !== nextLoading) {
+      setLoading(nextLoading)
+    }
+    if (error !== null) {
+      setError(null)
+    }
+  } else {
+    currentTargetKeyRef.current = discoveryTargetKey
+  }
 
   const refresh = useCallback(async (): Promise<SkillFreshnessResult | null> => {
     const generation = ++generationRef.current
