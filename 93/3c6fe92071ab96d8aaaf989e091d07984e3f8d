@@ -1,0 +1,25 @@
+src/main/ipc/skills.ts
+  s_5d39b7e25a7cef::t_e2bd89073573a0 72-76
+src/main/runtime/rpc/methods/skills.ts
+  s_5d39b7e25a7cef::t_1b44bb48f6ac75 24-25
+src/shared/orca-managed-skills.ts
+  s_5d39b7e25a7cef::t_1e1557f511b778 31,73,79
+src/shared/skill-freshness.ts
+  s_5d39b7e25a7cef::t_35f51349c8bbcb 13-16,18,20-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.13",
+  "base_commit_sha": "933c6fe92071ab96d8aaaf989e091d07984e3f8d",
+  "prompts": {},
+  "sessions": {
+    "s_5d39b7e25a7cef": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "41304500-85e4-4b7c-ac1c-1cb22d629aa0",
+        "model": "claude-fable-5"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
