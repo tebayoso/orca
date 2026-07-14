@@ -10,7 +10,6 @@ import type {
 import { discoverSkills } from './discovery'
 import { resolveBundledSkillsRoot } from './bundled-skills-root'
 import type { DiscoveredSkill } from '../../shared/skills'
-import type { Repo } from '../../shared/types'
 
 const SKILL_FILE_NAME = 'SKILL.md'
 const MAX_SKILL_MARKDOWN_BYTES = 256 * 1024
@@ -67,11 +66,9 @@ async function hashSkillFile(skillFilePath: string): Promise<string | null> {
 }
 
 function skillMatchesManagedName(skill: DiscoveredSkill, skillName: string): boolean {
-  const expected = normalizeSkillName(skillName)
-  return (
-    normalizeSkillName(skill.name) === expected ||
-    normalizeSkillName(basename(skill.directoryPath)) === expected
-  )
+  // Why: match install identity (directory basename) only — frontmatter name
+  // collisions with user forks would otherwise drive overwrite prompts.
+  return normalizeSkillName(basename(skill.directoryPath)) === normalizeSkillName(skillName)
 }
 
 function listInstalledHomeSkills(
@@ -130,9 +127,7 @@ function resolveStatus(args: {
 }
 
 export async function checkOrcaSkillFreshness(args?: {
-  repos?: Repo[]
   homeDir?: string
-  cwd?: string
   referenceRoot?: string | null
 }): Promise<SkillFreshnessResult> {
   const referenceRoot =

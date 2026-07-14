@@ -5,7 +5,6 @@ import { useOrcaSkillFreshness } from '@/hooks/useOrcaSkillFreshness'
 import { useAppStore } from '@/store'
 import {
   dismissOutdatedSkillForHash,
-  markOutdatedSkillUpdateAttempted,
   shouldPromptOutdatedSkill,
   snoozeOutdatedSkillForSession
 } from './outdated-skill-reminder'
@@ -70,12 +69,11 @@ export function OutdatedSkillUpdateHost(): React.JSX.Element | null {
     if (!activeSkill) {
       return
     }
-    // Why: X matches UpdateCard dismiss — hide this expected hash until the
-    // next Orca release changes the reference skill content.
+    // Why: always session-snooze; also persist dismiss when we have a hash.
+    // If localStorage fails, snooze still covers the session (CodeRabbit).
+    snoozeOutdatedSkillForSession(activeSkill.skillName)
     if (activeSkill.expectedHash) {
       dismissOutdatedSkillForHash(activeSkill.skillName, activeSkill.expectedHash)
-    } else {
-      snoozeOutdatedSkillForSession(activeSkill.skillName)
     }
     suppressCurrent(activeSkill.skillName)
   }, [activeSkill, suppressCurrent])
@@ -89,9 +87,8 @@ export function OutdatedSkillUpdateHost(): React.JSX.Element | null {
       repoId: null
     })
     openSettingsPage()
-    // Why: record for every managed skill (including Linear/emulator surfaces
-    // that only copy a command). Terminal panels also mark after prereqs pass.
-    markOutdatedSkillUpdateAttempted(activeSkill.skillName, activeSkill.expectedHash)
+    // Why: session-snooze on navigate only. Persistent update-attempt is recorded
+    // when a setup panel actually opens the update terminal after prereqs.
     snoozeOutdatedSkillForSession(activeSkill.skillName)
     suppressCurrent(activeSkill.skillName)
   }, [activeSkill, openSettingsPage, openSettingsTarget, suppressCurrent])

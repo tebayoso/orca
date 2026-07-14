@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { SkillDiscoveryTarget } from '../../../shared/skills'
 import type { SkillFreshnessEntry, SkillFreshnessResult } from '../../../shared/skill-freshness'
+import { shouldPromptOutdatedSkill } from '@/components/skills/outdated-skill-reminder'
 import { useMountedRef } from './useMountedRef'
 
 const INSTALLED_AGENT_SKILLS_CHANGED_EVENT = 'orca:installed-agent-skills-changed'
@@ -265,7 +266,7 @@ export function useOrcaSkillFreshness(options?: {
   const skills = useMemo(() => (enabled && result ? result.skills : []), [enabled, result])
 
   const outdatedSkills = useMemo(
-    () => skills.filter((skill) => skill.status === 'outdated'),
+    () => skills.filter((skill) => skill.status === 'outdated' && shouldPromptOutdatedSkill(skill)),
     [skills]
   )
 

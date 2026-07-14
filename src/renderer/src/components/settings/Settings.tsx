@@ -675,6 +675,8 @@ function Settings(): React.JSX.Element {
     orchestrationSkill
   const { installed: computerUseSkillInstalled, loading: computerUseSkillLoading } =
     computerUseSkill
+  // Why: outdatedSkills already applies dismiss/attempt suppression so badges
+  // match the floating card (no permanent amber after a legitimate update).
   const outdatedSectionIds = useMemo(() => {
     const sectionIds = new Set<string>()
     for (const skill of skillFreshness.outdatedSkills) {

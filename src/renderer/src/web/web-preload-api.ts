@@ -2595,14 +2595,10 @@ function createSkillsApi(): NonNullable<Partial<PreloadApi>['skills']> {
         sources: [],
         scannedAt: Date.now()
       })),
-    checkFreshness: (target) =>
-      callRuntimeResult<SkillFreshnessResult>('skills.checkFreshness', target, 15_000).catch(
-        () => ({
-          skills: [],
-          scannedAt: Date.now(),
-          referenceRoot: null
-        })
-      )
+    // Why: daemon freshness is host-home only; do not key WSL targets against
+    // host results. Propagate errors so the hook does not cache empty success.
+    checkFreshness: () =>
+      callRuntimeResult<SkillFreshnessResult>('skills.checkFreshness', {}, 15_000)
   }
 }
 

@@ -90,7 +90,7 @@ describe('registerSkillsHandlers', () => {
   it('registers a host freshness check without walking project repos', async () => {
     const handler = getFreshnessHandler()
     await handler(null, undefined)
-    expect(checkFreshnessMock).toHaveBeenCalledWith({ homeDir: undefined, repos: [] })
+    expect(checkFreshnessMock).toHaveBeenCalledWith({ homeDir: undefined })
   })
 
   it('uses host skill discovery when resolved project runtime overrides stale WSL target state', async () => {

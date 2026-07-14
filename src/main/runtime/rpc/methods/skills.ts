@@ -21,7 +21,8 @@ export const SKILL_METHODS: RpcMethod[] = [
   defineMethod({
     name: 'skills.checkFreshness',
     params: SkillDiscoveryParams,
-    // Why: freshness only needs home skill roots; never walk project repos.
-    handler: async () => checkOrcaSkillFreshness({ repos: [] })
+    // Why: web/SSH paired clients hash the daemon host home only. WSL home
+    // resolution stays on the desktop IPC path (Windows + wsl.exe).
+    handler: async () => checkOrcaSkillFreshness({})
   })
 ]

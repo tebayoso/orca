@@ -50,7 +50,6 @@ describe('checkOrcaSkillFreshness', () => {
     )
 
     const result = await checkOrcaSkillFreshness({
-      repos: [],
       homeDir,
       referenceRoot
     })
@@ -72,7 +71,6 @@ describe('checkOrcaSkillFreshness', () => {
     await writeSkill(join(homeDir, '.agents', 'skills'), 'orchestration', content)
 
     const result = await checkOrcaSkillFreshness({
-      repos: [],
       homeDir,
       referenceRoot
     })
@@ -89,7 +87,6 @@ describe('checkOrcaSkillFreshness', () => {
     await mkdir(join(homeDir, '.agents', 'skills'), { recursive: true })
 
     const result = await checkOrcaSkillFreshness({
-      repos: [],
       homeDir,
       referenceRoot
     })
@@ -107,7 +104,6 @@ describe('checkOrcaSkillFreshness', () => {
     await writeFile(skillFilePath, 'x'.repeat(300 * 1024), 'utf8')
 
     const result = await checkOrcaSkillFreshness({
-      repos: [],
       homeDir,
       referenceRoot
     })
@@ -131,7 +127,6 @@ describe('checkOrcaSkillFreshness', () => {
     )
 
     const result = await checkOrcaSkillFreshness({
-      repos: [],
       homeDir,
       cwd: repoDir,
       referenceRoot
@@ -156,7 +151,6 @@ describe('checkOrcaSkillFreshness', () => {
     )
 
     const result = await checkOrcaSkillFreshness({
-      repos: [],
       homeDir,
       referenceRoot
     })
