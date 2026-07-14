@@ -21,7 +21,8 @@ function normalizeSkillName(value: string): string {
 
 /** Normalize line endings so macOS/Windows installs hash the same content. */
 export function normalizeSkillMarkdownForHash(content: string): string {
-  return content.replace(/\r\n/g, '\n')
+  // Why: strip a leading UTF-8 BOM so Windows-written skills still match.
+  return content.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n')
 }
 
 export function hashSkillMarkdown(content: string): string {
@@ -73,20 +74,15 @@ function skillMatchesManagedName(skill: DiscoveredSkill, skillName: string): boo
   )
 }
 
-function pickInstalledGlobalSkill(
+function listInstalledHomeSkills(
   skills: readonly DiscoveredSkill[],
   skillName: string
-): DiscoveredSkill | null {
-  // Why: only global/home installs participate in the update prompt. Repo and
-  // plugin copies must not mark a skill outdated or drive `npx skills update
-  // --global` when the user never installed that package globally.
-  // Match only this skill's package name — aliases are install-time synonyms
-  // (e.g. Linear), not interchangeable content for hash comparison.
-  return (
-    skills.find(
-      (skill) =>
-        skill.installed && skill.sourceKind === 'home' && skillMatchesManagedName(skill, skillName)
-    ) ?? null
+): DiscoveredSkill[] {
+  // Why: `npx skills add --global` writes into each agent's home skills dir
+  // (~/.agents, ~/.claude, ~/.codex, …). Any diverging home copy must count.
+  return skills.filter(
+    (skill) =>
+      skill.installed && skill.sourceKind === 'home' && skillMatchesManagedName(skill, skillName)
   )
 }
 
@@ -113,21 +109,24 @@ async function loadExpectedHashes(referenceRoot: string): Promise<Map<string, st
 
 function resolveStatus(args: {
   expectedHash: string | null
-  installedHash: string | null
-  installed: boolean
+  installedCount: number
+  readableCount: number
+  divergingCount: number
 }): SkillFreshnessStatus {
   if (!args.expectedHash) {
     return 'unknown'
   }
-  if (!args.installed) {
+  if (args.installedCount === 0) {
     return 'missing'
   }
-  // Why: an installed path that cannot be read is not "missing" — avoid
-  // driving install UX when the skill is present but unreadable.
-  if (!args.installedHash) {
+  // Why: present-but-unreadable must not drive install UX.
+  if (args.readableCount === 0) {
     return 'unknown'
   }
-  return args.expectedHash === args.installedHash ? 'current' : 'outdated'
+  if (args.divergingCount > 0) {
+    return 'outdated'
+  }
+  return 'current'
 }
 
 export async function checkOrcaSkillFreshness(args?: {
@@ -140,6 +139,7 @@ export async function checkOrcaSkillFreshness(args?: {
     args?.referenceRoot === undefined ? resolveBundledSkillsRoot() : args.referenceRoot
   const expectedHashes = referenceRoot ? await loadExpectedHashes(referenceRoot) : new Map()
 
+  // Why: freshness only cares about home installs. Skip repo walks (M4).
   const discovery = await discoverSkills({
     repos: args?.repos ?? [],
     homeDir: args?.homeDir,
@@ -149,8 +149,20 @@ export async function checkOrcaSkillFreshness(args?: {
   const skills = await Promise.all(
     ORCA_MANAGED_SKILLS.map(async (definition) => {
       const expectedHash = expectedHashes.get(normalizeSkillName(definition.skillName)) ?? null
-      const installed = pickInstalledGlobalSkill(discovery.skills, definition.skillName)
-      const installedHash = installed ? await hashSkillFile(installed.skillFilePath) : null
+      const homeInstalls = listInstalledHomeSkills(discovery.skills, definition.skillName)
+      const hashed = await Promise.all(
+        homeInstalls.map(async (install) => ({
+          path: install.skillFilePath,
+          hash: await hashSkillFile(install.skillFilePath)
+        }))
+      )
+      const readable = hashed.filter((entry) => entry.hash !== null)
+      const diverging = readable.filter(
+        (entry) => expectedHash !== null && entry.hash !== expectedHash
+      )
+      const primary = diverging[0] ??
+        readable[0] ?? { path: homeInstalls[0]?.skillFilePath ?? null, hash: null }
+
       return {
         skillName: definition.skillName,
         displayName: definition.displayName,
@@ -158,12 +170,14 @@ export async function checkOrcaSkillFreshness(args?: {
         updateCommand: definition.updateCommand,
         status: resolveStatus({
           expectedHash,
-          installedHash,
-          installed: installed !== null
+          installedCount: homeInstalls.length,
+          readableCount: readable.length,
+          divergingCount: diverging.length
         }),
         expectedHash,
-        installedHash,
-        installedPath: installed?.skillFilePath ?? null
+        installedHash: primary.hash,
+        installedPath: primary.path,
+        divergingPaths: diverging.map((entry) => entry.path)
       } satisfies SkillFreshnessEntry
     })
   )

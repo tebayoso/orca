@@ -683,34 +683,36 @@ function Settings(): React.JSX.Element {
     return sectionIds
   }, [skillFreshness.outdatedSkills])
   const capabilityInstallStatusBySectionId = useMemo(() => {
+    // Why: do not OR skillFreshness.loading into known install statuses —
+    // that regressed Settings rows to "Checking..." on every open (Claude M3/UX).
     const next = new Map<string, SettingsNavInstallStatus>([
       [
         'orchestration',
         getSkillNavInstallStatus({
           installed: orchestrationSkillInstalled,
-          loading: orchestrationSkillLoading || skillFreshness.loading,
+          loading: orchestrationSkillLoading,
           outdated: outdatedSectionIds.has('orchestration')
         })
       ]
     ])
-    if (outdatedSectionIds.has('general')) {
-      next.set('general', 'outdated')
-    }
-    if (outdatedSectionIds.has('integrations')) {
-      next.set('integrations', 'outdated')
-    }
-    if (outdatedSectionIds.has('experimental')) {
-      next.set('experimental', 'outdated')
-    }
-    if (outdatedSectionIds.has('mobile-emulator') && showDesktopOnlySettings) {
-      next.set('mobile-emulator', 'outdated')
+    // Apply outdated badges generically from freshness section ids.
+    for (const sectionId of outdatedSectionIds) {
+      if (sectionId === 'computer-use' || sectionId === 'mobile-emulator') {
+        if (!showDesktopOnlySettings) {
+          continue
+        }
+      }
+      if (sectionId === 'orchestration') {
+        continue
+      }
+      next.set(sectionId, 'outdated')
     }
     if (showDesktopOnlySettings) {
       next.set(
         'computer-use',
         getSkillNavInstallStatus({
           installed: computerUseSkillInstalled,
-          loading: computerUseSkillLoading || skillFreshness.loading,
+          loading: computerUseSkillLoading,
           outdated: outdatedSectionIds.has('computer-use')
         })
       )
@@ -735,7 +737,6 @@ function Settings(): React.JSX.Element {
     outdatedSectionIds,
     settings,
     showDesktopOnlySettings,
-    skillFreshness.loading,
     voiceModelStatesLoading
   ])
   const navSections = useMemo(

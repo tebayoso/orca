@@ -10,9 +10,15 @@ export type SkillFreshnessEntry = {
   status: SkillFreshnessStatus
   /** sha256 of the app-bundled SKILL.md (expected). */
   expectedHash: string | null
-  /** sha256 of the globally installed SKILL.md when present. */
+  /**
+   * Hash used for prompt identity. When outdated, this is the first diverging
+   * home install's hash; when current, any matching home install hash.
+   */
   installedHash: string | null
+  /** First home install path (prefer diverging when outdated). */
   installedPath: string | null
+  /** Every home install path that diverges from the app reference. */
+  divergingPaths: string[]
 }
 
 export type SkillFreshnessResult = {

@@ -69,7 +69,11 @@ export function registerSkillsHandlers(store: Store): void {
     'skills:checkFreshness',
     async (_event, target?: SkillDiscoveryTarget): Promise<SkillFreshnessResult> => {
       const context = await resolveScanContext(target)
-      return checkOrcaSkillFreshness(context)
+      // Why: freshness only hashes home installs — skip repo trees entirely (M4).
+      return checkOrcaSkillFreshness({
+        homeDir: context.homeDir,
+        repos: []
+      })
     }
   )
 }

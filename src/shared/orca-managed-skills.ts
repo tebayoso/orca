@@ -28,12 +28,10 @@ export type OrcaManagedSkillDefinition = {
   skillName: string
   /** Short product label for UI copy. */
   displayName: string
-  /** Settings sidebar section that owns this skill. */
+  /** Settings sidebar section that hosts this skill. */
   settingsSectionId: OrcaManagedSkillSettingsSectionId
   /** Global update command (npx skills update …). */
   updateCommand: string
-  /** Alternate directory/frontmatter names that count as the same skill. */
-  aliases?: readonly string[]
 }
 
 export const ORCA_EMULATOR_SKILL_NAME = 'orca-emulator'
@@ -72,15 +70,13 @@ export const ORCA_MANAGED_SKILLS: readonly OrcaManagedSkillDefinition[] = [
     skillName: ORCA_LINEAR_SKILL_NAME,
     displayName: 'Orca Linear',
     settingsSectionId: 'integrations',
-    updateCommand: ORCA_LINEAR_SKILL_UPDATE_COMMAND,
-    aliases: [LINEAR_TICKETS_SKILL_NAME]
+    updateCommand: ORCA_LINEAR_SKILL_UPDATE_COMMAND
   },
   {
     skillName: LINEAR_TICKETS_SKILL_NAME,
     displayName: 'Linear tickets',
     settingsSectionId: 'integrations',
-    updateCommand: LINEAR_TICKETS_SKILL_UPDATE_COMMAND,
-    aliases: [ORCA_LINEAR_SKILL_NAME]
+    updateCommand: LINEAR_TICKETS_SKILL_UPDATE_COMMAND
   },
   {
     skillName: ORCA_EMULATOR_SKILL_NAME,
@@ -95,18 +91,3 @@ export const ORCA_MANAGED_SKILLS: readonly OrcaManagedSkillDefinition[] = [
     updateCommand: buildAgentFeatureSkillUpdateCommand(ORCA_EMULATOR_ANDROID_SKILL_NAME)
   }
 ]
-
-export function getOrcaManagedSkillDefinition(
-  skillName: string
-): OrcaManagedSkillDefinition | undefined {
-  const normalized = skillName.trim().toLowerCase()
-  return ORCA_MANAGED_SKILLS.find(
-    (skill) =>
-      skill.skillName === normalized ||
-      skill.aliases?.some((alias) => alias.toLowerCase() === normalized)
-  )
-}
-
-export function listOrcaManagedSkillNames(): readonly string[] {
-  return ORCA_MANAGED_SKILLS.map((skill) => skill.skillName)
-}

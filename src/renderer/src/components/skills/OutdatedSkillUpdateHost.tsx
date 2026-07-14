@@ -5,6 +5,7 @@ import { useOrcaSkillFreshness } from '@/hooks/useOrcaSkillFreshness'
 import { useAppStore } from '@/store'
 import {
   dismissOutdatedSkillForHash,
+  markOutdatedSkillUpdateAttempted,
   shouldPromptOutdatedSkill,
   snoozeOutdatedSkillForSession
 } from './outdated-skill-reminder'
@@ -84,6 +85,9 @@ export function OutdatedSkillUpdateHost(): React.JSX.Element | null {
       repoId: null
     })
     openSettingsPage()
+    // Why (M1): after the user takes Update, don't re-prompt for this app
+    // reference hash even if GitHub HEAD still differs from the bundle.
+    markOutdatedSkillUpdateAttempted(activeSkill.skillName, activeSkill.expectedHash)
     snoozeOutdatedSkillForSession(activeSkill.skillName)
     suppressCurrent(activeSkill.skillName)
   }, [activeSkill, openSettingsPage, openSettingsTarget, suppressCurrent])

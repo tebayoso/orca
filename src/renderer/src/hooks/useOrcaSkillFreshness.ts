@@ -8,6 +8,9 @@ const FRESHNESS_CHANGED_EVENT = 'orca:skill-freshness-changed'
 
 let cachedFreshnessByTarget = new Map<string, SkillFreshnessResult>()
 let pendingFreshnessByTarget = new Map<string, Promise<SkillFreshnessResult>>()
+// Why (M3): every Settings panel mounts this hook and focus-fires refresh.
+// Coalesce forced loads per target so one focus event is one scan.
+let forcedFreshnessByTarget = new Map<string, Promise<SkillFreshnessResult>>()
 
 export type OrcaSkillFreshnessState = {
   loading: boolean
@@ -43,33 +46,10 @@ export function notifyOrcaSkillFreshnessChanged(): void {
   }
 }
 
-async function loadSkillFreshness(
-  force: boolean,
+async function startFreshnessRequest(
+  key: string,
   target?: SkillDiscoveryTarget
 ): Promise<SkillFreshnessResult> {
-  const key = getSkillDiscoveryTargetKey(target)
-  if (!force) {
-    const cached = cachedFreshnessByTarget.get(key)
-    if (cached) {
-      return cached
-    }
-    const inFlight = pendingFreshnessByTarget.get(key)
-    if (inFlight) {
-      return inFlight
-    }
-  } else {
-    // Why: wait out any in-flight scan for this target so a forced refresh
-    // cannot race an older result writing back over a newer one.
-    const inFlight = pendingFreshnessByTarget.get(key)
-    if (inFlight) {
-      try {
-        await inFlight
-      } catch {
-        // Previous failure should not block an explicit re-check.
-      }
-    }
-  }
-
   const request = window.api.skills
     .checkFreshness(target)
     .then((result) => {
@@ -85,10 +65,54 @@ async function loadSkillFreshness(
   return request
 }
 
+async function loadSkillFreshness(
+  force: boolean,
+  target?: SkillDiscoveryTarget
+): Promise<SkillFreshnessResult> {
+  const key = getSkillDiscoveryTargetKey(target)
+
+  if (!force) {
+    const cached = cachedFreshnessByTarget.get(key)
+    if (cached) {
+      return cached
+    }
+    const inFlight = pendingFreshnessByTarget.get(key)
+    if (inFlight) {
+      return inFlight
+    }
+    return startFreshnessRequest(key, target)
+  }
+
+  const existingForced = forcedFreshnessByTarget.get(key)
+  if (existingForced) {
+    return existingForced
+  }
+
+  const forced = (async () => {
+    const inFlight = pendingFreshnessByTarget.get(key)
+    if (inFlight) {
+      try {
+        await inFlight
+      } catch {
+        // Previous failure should not block an explicit re-check.
+      }
+    }
+    return startFreshnessRequest(key, target)
+  })().finally(() => {
+    if (forcedFreshnessByTarget.get(key) === forced) {
+      forcedFreshnessByTarget.delete(key)
+    }
+  })
+
+  forcedFreshnessByTarget.set(key, forced)
+  return forced
+}
+
 export const _orcaSkillFreshnessInternalsForTests = {
   reset(): void {
     cachedFreshnessByTarget = new Map()
     pendingFreshnessByTarget = new Map()
+    forcedFreshnessByTarget = new Map()
   },
   setCached(result: SkillFreshnessResult | null, targetKey = 'host'): void {
     if (result) {
@@ -164,7 +188,6 @@ export function useOrcaSkillFreshness(options?: {
     if (!enabled) {
       return
     }
-    // Prefer cache for the initial paint when another surface already scanned.
     void loadSkillFreshness(false, discoveryTarget)
       .then((next) => {
         if (mountedRef.current && currentTargetKeyRef.current === discoveryTargetKey) {

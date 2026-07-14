@@ -21,11 +21,7 @@ export const SKILL_METHODS: RpcMethod[] = [
   defineMethod({
     name: 'skills.checkFreshness',
     params: SkillDiscoveryParams,
-    handler: async (params, { runtime }) => {
-      const cwd = params.cwd?.trim() || undefined
-      return cwd
-        ? checkOrcaSkillFreshness({ repos: [], cwd })
-        : checkOrcaSkillFreshness({ repos: runtime.listRepos() })
-    }
+    // Why: freshness only needs home skill roots; never walk project repos.
+    handler: async () => checkOrcaSkillFreshness({ repos: [] })
   })
 ]

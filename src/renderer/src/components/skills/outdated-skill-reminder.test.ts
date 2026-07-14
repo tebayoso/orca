@@ -4,6 +4,8 @@ import {
   dismissOutdatedSkillForHash,
   isOutdatedSkillDismissedForHash,
   isOutdatedSkillSnoozedForSession,
+  isOutdatedSkillUpdateAttemptedForHash,
+  markOutdatedSkillUpdateAttempted,
   shouldPromptOutdatedSkill,
   snoozeOutdatedSkillForSession
 } from './outdated-skill-reminder'
@@ -46,7 +48,14 @@ describe('outdated skill reminder', () => {
     dismissOutdatedSkillForHash('orca-cli', 'abc')
     expect(isOutdatedSkillDismissedForHash('orca-cli', 'abc')).toBe(true)
     expect(shouldPromptOutdatedSkill({ skillName: 'orca-cli', expectedHash: 'abc' })).toBe(false)
-    // Why: a new Orca release changes the reference hash and should re-prompt.
+    expect(shouldPromptOutdatedSkill({ skillName: 'orca-cli', expectedHash: 'def' })).toBe(true)
+  })
+
+  it('stops prompting after an update attempt for the same expected hash (M1)', () => {
+    markOutdatedSkillUpdateAttempted('orca-cli', 'abc')
+    expect(isOutdatedSkillUpdateAttemptedForHash('orca-cli', 'abc')).toBe(true)
+    expect(shouldPromptOutdatedSkill({ skillName: 'orca-cli', expectedHash: 'abc' })).toBe(false)
+    // New app release with a new expected hash should re-prompt.
     expect(shouldPromptOutdatedSkill({ skillName: 'orca-cli', expectedHash: 'def' })).toBe(true)
   })
 })
