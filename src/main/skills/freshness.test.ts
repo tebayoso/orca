@@ -94,4 +94,30 @@ describe('checkOrcaSkillFreshness', () => {
     const computerUse = result.skills.find((skill) => skill.skillName === 'computer-use')
     expect(computerUse?.status).toBe('missing')
   })
+
+  it('ignores repo-local skill copies when deciding global freshness', async () => {
+    const referenceRoot = await makeTempDir('orca-skill-ref-')
+    const homeDir = await makeTempDir('orca-skill-home-')
+    const repoDir = await makeTempDir('orca-skill-repo-')
+    const content = '---\nname: orca-cli\n---\nreference\n'
+    await writeSkill(referenceRoot, 'orca-cli', content)
+    await mkdir(join(homeDir, '.agents', 'skills'), { recursive: true })
+    // Stale copy only under the repo — must not count as a global install.
+    await mkdir(join(repoDir, '.agents', 'skills'), { recursive: true })
+    await writeSkill(
+      join(repoDir, '.agents', 'skills'),
+      'orca-cli',
+      '---\nname: orca-cli\n---\nstale\n'
+    )
+
+    const result = await checkOrcaSkillFreshness({
+      repos: [],
+      homeDir,
+      cwd: repoDir,
+      referenceRoot
+    })
+
+    const orcaCli = result.skills.find((skill) => skill.skillName === 'orca-cli')
+    expect(orcaCli?.status).toBe('missing')
+  })
 })

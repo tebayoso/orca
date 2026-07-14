@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 import { open, readdir, stat } from 'node:fs/promises'
-import { basename, dirname, join } from 'node:path'
+import { join } from 'node:path'
 import { ORCA_MANAGED_SKILLS } from '../../shared/orca-managed-skills'
 import type {
   SkillFreshnessEntry,
@@ -20,7 +20,14 @@ function normalizeSkillName(value: string): string {
 }
 
 function basenameFromPath(pathValue: string): string {
-  return pathValue.split(/[\\/]/).filter(Boolean).at(-1) ?? pathValue
+  const segments = pathValue.split(/[\\/]/)
+  for (let index = segments.length - 1; index >= 0; index -= 1) {
+    const segment = segments[index]
+    if (segment) {
+      return segment
+    }
+  }
+  return pathValue
 }
 
 /** Normalize line endings so macOS/Windows installs hash the same content. */
@@ -65,18 +72,16 @@ function pickInstalledGlobalSkill(
   skills: readonly DiscoveredSkill[],
   skillName: string
 ): DiscoveredSkill | null {
-  // Prefer home installs so repo/plugin copies do not mask the global package.
+  // Why: only global/home installs participate in the update prompt. Repo and
+  // plugin copies must not mark a skill outdated or drive `npx skills update
+  // --global` when the user never installed that package globally.
   // Match only this skill's package name — aliases are install-time synonyms
   // (e.g. Linear), not interchangeable content for hash comparison.
-  const homeMatch = skills.find(
-    (skill) =>
-      skill.installed && skill.sourceKind === 'home' && skillMatchesManagedName(skill, skillName)
-  )
-  if (homeMatch) {
-    return homeMatch
-  }
   return (
-    skills.find((skill) => skill.installed && skillMatchesManagedName(skill, skillName)) ?? null
+    skills.find(
+      (skill) =>
+        skill.installed && skill.sourceKind === 'home' && skillMatchesManagedName(skill, skillName)
+    ) ?? null
   )
 }
 
@@ -130,35 +135,27 @@ export async function checkOrcaSkillFreshness(args?: {
     cwd: args?.cwd
   })
 
-  const skills: SkillFreshnessEntry[] = []
-  for (const definition of ORCA_MANAGED_SKILLS) {
-    const expectedHash = expectedHashes.get(normalizeSkillName(definition.skillName)) ?? null
-    const installed = pickInstalledGlobalSkill(discovery.skills, definition.skillName)
-    const installedHash = installed ? await hashSkillFile(installed.skillFilePath) : null
-    skills.push({
-      skillName: definition.skillName,
-      displayName: definition.displayName,
-      settingsSectionId: definition.settingsSectionId,
-      updateCommand: definition.updateCommand,
-      status: resolveStatus({ expectedHash, installedHash }),
-      expectedHash,
-      installedHash,
-      installedPath: installed?.skillFilePath ?? null
+  const skills = await Promise.all(
+    ORCA_MANAGED_SKILLS.map(async (definition) => {
+      const expectedHash = expectedHashes.get(normalizeSkillName(definition.skillName)) ?? null
+      const installed = pickInstalledGlobalSkill(discovery.skills, definition.skillName)
+      const installedHash = installed ? await hashSkillFile(installed.skillFilePath) : null
+      return {
+        skillName: definition.skillName,
+        displayName: definition.displayName,
+        settingsSectionId: definition.settingsSectionId,
+        updateCommand: definition.updateCommand,
+        status: resolveStatus({ expectedHash, installedHash }),
+        expectedHash,
+        installedHash,
+        installedPath: installed?.skillFilePath ?? null
+      } satisfies SkillFreshnessEntry
     })
-  }
+  )
 
   return {
     skills,
     scannedAt: Date.now(),
     referenceRoot
   }
-}
-
-/** Test helper: hash a path under a reference skills root. */
-export function referenceSkillFilePath(referenceRoot: string, skillName: string): string {
-  return join(referenceRoot, basename(skillName), SKILL_FILE_NAME)
-}
-
-export function referenceSkillDirectory(referenceRoot: string, skillName: string): string {
-  return dirname(referenceSkillFilePath(referenceRoot, skillName))
 }

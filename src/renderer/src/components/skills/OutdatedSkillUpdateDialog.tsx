@@ -24,9 +24,24 @@ export function OutdatedSkillUpdateDialog(props: {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') {
-        onDismiss()
+      if (event.key !== 'Escape' || event.defaultPrevented) {
+        return
       }
+      // Why: do not steal Escape from open dialogs, menus, or text fields.
+      const target = event.target
+      if (
+        target instanceof HTMLElement &&
+        (target.closest('[role="dialog"]') ||
+          target.closest('[role="menu"]') ||
+          target.isContentEditable ||
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT')
+      ) {
+        return
+      }
+      event.preventDefault()
+      onDismiss()
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)

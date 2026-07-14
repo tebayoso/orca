@@ -6,8 +6,8 @@ import { useMountedRef } from './useMountedRef'
 const INSTALLED_AGENT_SKILLS_CHANGED_EVENT = 'orca:installed-agent-skills-changed'
 const FRESHNESS_CHANGED_EVENT = 'orca:skill-freshness-changed'
 
-let cachedFreshness: SkillFreshnessResult | null = null
-let pendingFreshness: Promise<SkillFreshnessResult> | null = null
+let cachedFreshnessByTarget = new Map<string, SkillFreshnessResult>()
+let pendingFreshnessByTarget = new Map<string, Promise<SkillFreshnessResult>>()
 
 export type OrcaSkillFreshnessState = {
   loading: boolean
@@ -23,8 +23,21 @@ function normalizeSkillName(value: string): string {
   return value.trim().toLowerCase()
 }
 
+function getSkillDiscoveryTargetKey(target: SkillDiscoveryTarget | undefined): string {
+  if (target?.projectRuntime) {
+    return target.projectRuntime.status === 'resolved'
+      ? target.projectRuntime.runtime.cacheKey
+      : target.projectRuntime.repair.cacheKey
+  }
+  if (target?.runtime === 'wsl') {
+    return `wsl:${target.wslDistro?.trim() ?? ''}`
+  }
+  const cwd = target?.cwd?.trim()
+  return cwd ? `host:cwd:${cwd}` : 'host'
+}
+
 export function notifyOrcaSkillFreshnessChanged(): void {
-  cachedFreshness = null
+  cachedFreshnessByTarget.clear()
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent(FRESHNESS_CHANGED_EVENT))
   }
@@ -34,34 +47,45 @@ async function loadSkillFreshness(
   force: boolean,
   target?: SkillDiscoveryTarget
 ): Promise<SkillFreshnessResult> {
-  if (!force && cachedFreshness) {
-    return cachedFreshness
+  const key = getSkillDiscoveryTargetKey(target)
+  if (!force) {
+    const cached = cachedFreshnessByTarget.get(key)
+    if (cached) {
+      return cached
+    }
   }
-  if (pendingFreshness) {
-    return pendingFreshness
+
+  const inFlight = pendingFreshnessByTarget.get(key)
+  if (inFlight && !force) {
+    return inFlight
   }
+
   const request = window.api.skills
     .checkFreshness(target)
     .then((result) => {
-      cachedFreshness = result
+      cachedFreshnessByTarget.set(key, result)
       return result
     })
     .finally(() => {
-      if (pendingFreshness === request) {
-        pendingFreshness = null
+      if (pendingFreshnessByTarget.get(key) === request) {
+        pendingFreshnessByTarget.delete(key)
       }
     })
-  pendingFreshness = request
+  pendingFreshnessByTarget.set(key, request)
   return request
 }
 
 export const _orcaSkillFreshnessInternalsForTests = {
   reset(): void {
-    cachedFreshness = null
-    pendingFreshness = null
+    cachedFreshnessByTarget = new Map()
+    pendingFreshnessByTarget = new Map()
   },
-  setCached(result: SkillFreshnessResult | null): void {
-    cachedFreshness = result
+  setCached(result: SkillFreshnessResult | null, targetKey = 'host'): void {
+    if (result) {
+      cachedFreshnessByTarget.set(targetKey, result)
+    } else {
+      cachedFreshnessByTarget.clear()
+    }
   }
 }
 
@@ -71,14 +95,19 @@ export function useOrcaSkillFreshness(options?: {
 }): OrcaSkillFreshnessState {
   const enabled = options?.enabled ?? true
   const discoveryTarget = options?.discoveryTarget
+  const discoveryTargetKey = getSkillDiscoveryTargetKey(discoveryTarget)
   const mountedRef = useMountedRef()
-  const [result, setResult] = useState<SkillFreshnessResult | null>(cachedFreshness)
-  const [loading, setLoading] = useState(enabled && !cachedFreshness)
+  const cachedDiscovery = cachedFreshnessByTarget.get(discoveryTargetKey) ?? null
+  const [result, setResult] = useState<SkillFreshnessResult | null>(cachedDiscovery)
+  const [loading, setLoading] = useState(enabled && !cachedDiscovery)
   const [error, setError] = useState<string | null>(null)
   const generationRef = useRef(0)
+  const currentTargetKeyRef = useRef(discoveryTargetKey)
+  currentTargetKeyRef.current = discoveryTargetKey
 
   const refresh = useCallback(async (): Promise<SkillFreshnessResult | null> => {
     const generation = ++generationRef.current
+    const requestTargetKey = discoveryTargetKey
     if (!enabled) {
       if (mountedRef.current) {
         setLoading(false)
@@ -90,31 +119,61 @@ export function useOrcaSkillFreshness(options?: {
     }
     try {
       const next = await loadSkillFreshness(true, discoveryTarget)
-      if (mountedRef.current && generation === generationRef.current) {
+      if (
+        mountedRef.current &&
+        generation === generationRef.current &&
+        currentTargetKeyRef.current === requestTargetKey
+      ) {
         setResult(next)
         setError(null)
       }
       return next
     } catch (refreshError) {
-      if (mountedRef.current && generation === generationRef.current) {
+      if (
+        mountedRef.current &&
+        generation === generationRef.current &&
+        currentTargetKeyRef.current === requestTargetKey
+      ) {
         setError(
           refreshError instanceof Error ? refreshError.message : 'Could not check skill freshness.'
         )
       }
       return null
     } finally {
-      if (mountedRef.current && generation === generationRef.current) {
+      if (
+        mountedRef.current &&
+        generation === generationRef.current &&
+        currentTargetKeyRef.current === requestTargetKey
+      ) {
         setLoading(false)
       }
     }
-  }, [discoveryTarget, enabled, mountedRef])
+  }, [discoveryTarget, discoveryTargetKey, enabled, mountedRef])
 
   useEffect(() => {
     if (!enabled) {
       return
     }
-    void refresh()
-  }, [enabled, refresh])
+    // Prefer cache for the initial paint when another surface already scanned.
+    void loadSkillFreshness(false, discoveryTarget)
+      .then((next) => {
+        if (mountedRef.current && currentTargetKeyRef.current === discoveryTargetKey) {
+          setResult(next)
+          setError(null)
+          setLoading(false)
+        }
+      })
+      .catch((refreshError: unknown) => {
+        if (mountedRef.current && currentTargetKeyRef.current === discoveryTargetKey) {
+          setError(
+            refreshError instanceof Error
+              ? refreshError.message
+              : 'Could not check skill freshness.'
+          )
+          setLoading(false)
+        }
+      })
+  }, [discoveryTarget, discoveryTargetKey, enabled, mountedRef])
 
   useEffect(() => {
     if (!enabled) {
