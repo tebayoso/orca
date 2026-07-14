@@ -11,6 +11,7 @@ import type { InstalledAgentSkillState } from '@/hooks/useInstalledAgentSkills'
 import { useOrcaSkillFreshness } from '@/hooks/useOrcaSkillFreshness'
 import { useActiveProjectSkillRuntime } from '@/hooks/useActiveProjectSkillRuntime'
 import { ORCHESTRATION_SKILL_NAME } from '@/lib/agent-feature-install-commands'
+import { markOutdatedSkillUpdateAttemptIfNeeded } from '@/components/skills/mark-outdated-skill-update-attempt'
 import { AgentSkillSetupPanel } from './AgentSkillSetupPanel'
 import {
   buildSkillCommandForRuntime,
@@ -27,7 +28,7 @@ export function OrchestrationSetupCard(props: {
 }): JSX.Element {
   const { compact, terminalHeightPx, skill } = props
   const activeSkillRuntime = useActiveProjectSkillRuntime()
-  const { isSkillOutdated } = useOrcaSkillFreshness({
+  const { isSkillOutdated, getSkillEntry } = useOrcaSkillFreshness({
     discoveryTarget: activeSkillRuntime.discoveryTarget
   })
   const installCommand = !activeSkillRuntime.installDisabledReason
@@ -75,6 +76,11 @@ export function OrchestrationSetupCard(props: {
           : window.api.cli.getInstallStatus()
       }
       onBeforeOpenTerminal={async () => {
+        markOutdatedSkillUpdateAttemptIfNeeded(
+          ORCHESTRATION_SKILL_NAME,
+          isSkillOutdated(ORCHESTRATION_SKILL_NAME),
+          getSkillEntry(ORCHESTRATION_SKILL_NAME)?.expectedHash
+        )
         useAppStore.getState().recordFeatureInteraction('agent-orchestration-setup')
         await (activeSkillRuntime.agentRuntime?.runtime === 'wsl'
           ? ensureWslCliAvailableForAgentSkillTerminal(activeSkillRuntime.agentRuntime)

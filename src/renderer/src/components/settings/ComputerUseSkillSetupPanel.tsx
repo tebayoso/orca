@@ -14,6 +14,7 @@ import {
 } from '@/hooks/useInstalledAgentSkills'
 import { useOrcaSkillFreshness } from '@/hooks/useOrcaSkillFreshness'
 import { useActiveProjectSkillRuntime } from '@/hooks/useActiveProjectSkillRuntime'
+import { markOutdatedSkillUpdateAttemptIfNeeded } from '@/components/skills/mark-outdated-skill-update-attempt'
 import { useAppStore } from '@/store'
 import { AgentSkillSetupPanel } from './AgentSkillSetupPanel'
 import {
@@ -46,7 +47,7 @@ export function ComputerUseSkillSetupPanel(): React.JSX.Element {
     discoveryTarget: activeSkillRuntime.discoveryTarget,
     sourceKinds: GLOBAL_AGENT_SKILL_SOURCE_KINDS
   })
-  const { isSkillOutdated } = useOrcaSkillFreshness({
+  const { isSkillOutdated, getSkillEntry } = useOrcaSkillFreshness({
     discoveryTarget: activeSkillRuntime.discoveryTarget
   })
 
@@ -78,6 +79,11 @@ export function ComputerUseSkillSetupPanel(): React.JSX.Element {
           : window.api.cli.getInstallStatus()
       }
       onBeforeOpenTerminal={async () => {
+        markOutdatedSkillUpdateAttemptIfNeeded(
+          COMPUTER_USE_SKILL_NAME,
+          isSkillOutdated(COMPUTER_USE_SKILL_NAME),
+          getSkillEntry(COMPUTER_USE_SKILL_NAME)?.expectedHash
+        )
         useAppStore.getState().recordFeatureInteraction('computer-use-setup')
         await (activeSkillRuntime.agentRuntime?.runtime === 'wsl'
           ? ensureWslCliAvailableForAgentSkillTerminal(activeSkillRuntime.agentRuntime)

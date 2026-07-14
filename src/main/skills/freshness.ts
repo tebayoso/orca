@@ -139,11 +139,11 @@ export async function checkOrcaSkillFreshness(args?: {
     args?.referenceRoot === undefined ? resolveBundledSkillsRoot() : args.referenceRoot
   const expectedHashes = referenceRoot ? await loadExpectedHashes(referenceRoot) : new Map()
 
-  // Why: freshness only cares about home installs. Skip repo walks (M4).
+  // Why: freshness only cares about home installs. Skip repo/cwd walks.
   const discovery = await discoverSkills({
-    repos: args?.repos ?? [],
+    repos: [],
     homeDir: args?.homeDir,
-    cwd: args?.cwd
+    includeProjectRoots: false
   })
 
   const skills = await Promise.all(

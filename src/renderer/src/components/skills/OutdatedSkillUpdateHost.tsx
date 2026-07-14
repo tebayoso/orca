@@ -5,7 +5,6 @@ import { useOrcaSkillFreshness } from '@/hooks/useOrcaSkillFreshness'
 import { useAppStore } from '@/store'
 import {
   dismissOutdatedSkillForHash,
-  markOutdatedSkillUpdateAttempted,
   shouldPromptOutdatedSkill,
   snoozeOutdatedSkillForSession
 } from './outdated-skill-reminder'
@@ -15,6 +14,10 @@ import { OutdatedSkillUpdateDialog } from './OutdatedSkillUpdateDialog'
  * Queues one outdated-skill card at a time after app open. Skills that the
  * user snoozed this session or dismissed for the current expected hash are
  * skipped so only remaining outdated packages surface.
+ *
+ * Why host-only discovery: Settings panels may use a WSL project runtime for
+ * install status; the floating card always reflects the local host so it never
+ * navigates desktop users into a WSL-only false positive.
  */
 export function OutdatedSkillUpdateHost(): React.JSX.Element | null {
   const { outdatedSkills, loading } = useOrcaSkillFreshness()
@@ -85,9 +88,8 @@ export function OutdatedSkillUpdateHost(): React.JSX.Element | null {
       repoId: null
     })
     openSettingsPage()
-    // Why (M1): after the user takes Update, don't re-prompt for this app
-    // reference hash even if GitHub HEAD still differs from the bundle.
-    markOutdatedSkillUpdateAttempted(activeSkill.skillName, activeSkill.expectedHash)
+    // Why: only session-snooze here. Permanent "update attempted" is recorded
+    // when the Settings panel actually opens the update terminal command.
     snoozeOutdatedSkillForSession(activeSkill.skillName)
     suppressCurrent(activeSkill.skillName)
   }, [activeSkill, openSettingsPage, openSettingsTarget, suppressCurrent])

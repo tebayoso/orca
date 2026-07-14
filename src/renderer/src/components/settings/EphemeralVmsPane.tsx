@@ -23,6 +23,7 @@ import {
 } from '@/hooks/useInstalledAgentSkills'
 import { useOrcaSkillFreshness } from '@/hooks/useOrcaSkillFreshness'
 import { useActiveProjectSkillRuntime } from '@/hooks/useActiveProjectSkillRuntime'
+import { markOutdatedSkillUpdateAttemptIfNeeded } from '@/components/skills/mark-outdated-skill-update-attempt'
 import {
   buildSkillCommandForRuntime,
   ensureWslCliAvailableForAgentSkillTerminal,
@@ -70,7 +71,7 @@ export function EphemeralVmsPane(): React.JSX.Element {
     discoveryTarget: activeSkillRuntime.discoveryTarget,
     sourceKinds: GLOBAL_AGENT_SKILL_SOURCE_KINDS
   })
-  const { isSkillOutdated } = useOrcaSkillFreshness({
+  const { isSkillOutdated, getSkillEntry } = useOrcaSkillFreshness({
     discoveryTarget: activeSkillRuntime.discoveryTarget
   })
 
@@ -163,6 +164,11 @@ export function EphemeralVmsPane(): React.JSX.Element {
             : window.api.cli.getInstallStatus()
         }
         onBeforeOpenTerminal={async () => {
+          markOutdatedSkillUpdateAttemptIfNeeded(
+            EPHEMERAL_VMS_SKILL_NAME,
+            isSkillOutdated(EPHEMERAL_VMS_SKILL_NAME),
+            getSkillEntry(EPHEMERAL_VMS_SKILL_NAME)?.expectedHash
+          )
           await (activeSkillRuntime.agentRuntime?.runtime === 'wsl'
             ? ensureWslCliAvailableForAgentSkillTerminal(activeSkillRuntime.agentRuntime)
             : ensureOrcaCliAvailableForAgentSkillTerminal())

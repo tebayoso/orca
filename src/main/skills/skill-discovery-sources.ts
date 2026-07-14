@@ -25,10 +25,12 @@ export function buildSkillDiscoverySources(
     homeDir?: string
     cwd?: string
     repos?: Repo[]
+    /** When false, skip repo/cwd project roots (used by global skill freshness). */
+    includeProjectRoots?: boolean
   } = {}
 ): SkillScanRoot[] {
   const home = args.homeDir ?? homedir()
-  const cwd = args.cwd ?? process.cwd()
+  const includeProjectRoots = args.includeProjectRoots !== false
   const roots: SkillScanRoot[] = [
     source('home-codex', 'Codex home', join(home, '.codex', 'skills'), 'home', ['codex']),
     source('home-agents', 'Agent skills home', join(home, '.agents', 'skills'), 'home', [
@@ -60,6 +62,11 @@ export function buildSkillDiscoverySources(
     source('home-cursor', 'Cursor home', join(home, '.cursor', 'skills'), 'home', ['agent-skills'])
   ]
 
+  if (!includeProjectRoots) {
+    return roots
+  }
+
+  const cwd = args.cwd ?? process.cwd()
   const projectPaths = new Set<string>()
   for (const repo of args.repos ?? []) {
     if (repo.connectionId) {

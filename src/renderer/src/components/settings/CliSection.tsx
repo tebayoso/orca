@@ -18,6 +18,7 @@ import {
   useInstalledAgentSkill
 } from '@/hooks/useInstalledAgentSkills'
 import { useOrcaSkillFreshness } from '@/hooks/useOrcaSkillFreshness'
+import { markOutdatedSkillUpdateAttemptIfNeeded } from '@/components/skills/mark-outdated-skill-update-attempt'
 import { useMountedRef } from '@/hooks/useMountedRef'
 import { Button } from '../ui/button'
 import { Label } from '../ui/label'
@@ -33,6 +34,11 @@ import {
   getWslCliDistroRequest
 } from './CliSkillRuntimeSetup'
 import { WslCliRegistration } from './WslCliRegistration'
+import {
+  getFallbackCommandName,
+  getInstallDescription,
+  getRevealLabel
+} from './cli-section-platform-copy'
 import { translate } from '@/i18n/i18n'
 
 type CliSectionProps = {
@@ -41,33 +47,6 @@ type CliSectionProps = {
   wslSupportedPlatform?: boolean
   wslAvailable?: boolean
   wslCapabilitiesLoading?: boolean
-}
-
-function getRevealLabel(platform: string): string {
-  if (platform === 'darwin') {
-    return 'Show in Finder'
-  }
-  if (platform === 'win32') {
-    return 'Show in Explorer'
-  }
-  return 'Show in File Manager'
-}
-
-function getInstallDescription(platform: string): string {
-  if (platform === 'darwin') {
-    return 'Register `orca` in /usr/local/bin.'
-  }
-  if (platform === 'linux') {
-    return 'Register `orca-ide` in ~/.local/bin.'
-  }
-  if (platform === 'win32') {
-    return 'Register `orca` in your user PATH.'
-  }
-  return 'CLI registration is not yet available on this platform.'
-}
-
-function getFallbackCommandName(platform: string): string {
-  return platform === 'linux' ? 'orca-ide' : 'orca'
 }
 
 export function CliSection({
@@ -100,7 +79,7 @@ export function CliSection({
     discoveryTarget: cliSkillDiscoveryTarget,
     sourceKinds: GLOBAL_AGENT_SKILL_SOURCE_KINDS
   })
-  const { isSkillOutdated } = useOrcaSkillFreshness({
+  const { isSkillOutdated, getSkillEntry } = useOrcaSkillFreshness({
     discoveryTarget: cliSkillDiscoveryTarget
   })
   const cliSkillInstallCommand = buildSkillCommandForRuntime(
@@ -388,6 +367,11 @@ export function CliSection({
               getPrerequisiteStatus={getCliSkillPrerequisiteStatus}
               isPrerequisiteAvailable={isOrcaCliAvailableOnPath}
               onBeforeOpenTerminal={async () => {
+                markOutdatedSkillUpdateAttemptIfNeeded(
+                  ORCA_CLI_SKILL_NAME,
+                  isSkillOutdated(ORCA_CLI_SKILL_NAME),
+                  getSkillEntry(ORCA_CLI_SKILL_NAME)?.expectedHash
+                )
                 await (agentRuntime.runtime === 'wsl'
                   ? ensureWslCliAvailableForAgentSkillTerminal(agentRuntime)
                   : ensureOrcaCliAvailableForAgentSkillTerminal({

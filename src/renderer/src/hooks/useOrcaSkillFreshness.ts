@@ -4,7 +4,6 @@ import type { SkillFreshnessEntry, SkillFreshnessResult } from '../../../shared/
 import { useMountedRef } from './useMountedRef'
 
 const INSTALLED_AGENT_SKILLS_CHANGED_EVENT = 'orca:installed-agent-skills-changed'
-const FRESHNESS_CHANGED_EVENT = 'orca:skill-freshness-changed'
 
 let cachedFreshnessByTarget = new Map<string, SkillFreshnessResult>()
 let pendingFreshnessByTarget = new Map<string, Promise<SkillFreshnessResult>>()
@@ -26,24 +25,27 @@ function normalizeSkillName(value: string): string {
   return value.trim().toLowerCase()
 }
 
+/**
+ * Why: backend freshness ignores cwd and only scans home roots. Key by WSL vs
+ * host runtime only so project switches do not duplicate identical scans.
+ */
 function getSkillDiscoveryTargetKey(target: SkillDiscoveryTarget | undefined): string {
   if (target?.projectRuntime) {
-    return target.projectRuntime.status === 'resolved'
-      ? target.projectRuntime.runtime.cacheKey
-      : target.projectRuntime.repair.cacheKey
+    if (
+      target.projectRuntime.status === 'resolved' &&
+      target.projectRuntime.runtime.kind === 'wsl'
+    ) {
+      return `wsl:${target.projectRuntime.runtime.distro}`
+    }
+    if (target.projectRuntime.status === 'repair-required') {
+      return `repair:${target.projectRuntime.repair.cacheKey}`
+    }
+    return 'host'
   }
   if (target?.runtime === 'wsl') {
     return `wsl:${target.wslDistro?.trim() ?? ''}`
   }
-  const cwd = target?.cwd?.trim()
-  return cwd ? `host:cwd:${cwd}` : 'host'
-}
-
-export function notifyOrcaSkillFreshnessChanged(): void {
-  cachedFreshnessByTarget.clear()
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent(FRESHNESS_CHANGED_EVENT))
-  }
+  return 'host'
 }
 
 async function startFreshnessRequest(
@@ -217,11 +219,9 @@ export function useOrcaSkillFreshness(options?: {
     }
     window.addEventListener('focus', onChange)
     window.addEventListener(INSTALLED_AGENT_SKILLS_CHANGED_EVENT, onChange)
-    window.addEventListener(FRESHNESS_CHANGED_EVENT, onChange)
     return () => {
       window.removeEventListener('focus', onChange)
       window.removeEventListener(INSTALLED_AGENT_SKILLS_CHANGED_EVENT, onChange)
-      window.removeEventListener(FRESHNESS_CHANGED_EVENT, onChange)
     }
   }, [enabled, refresh])
 
