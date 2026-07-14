@@ -1,0 +1,21 @@
+src/main/skills/discovery.test.ts
+  s_baf0862db4c466::t_78487ddb8d99e0 60-85,106-126
+src/main/skills/skill-discovery-sources.ts
+  s_baf0862db4c466::t_7e0a96741d255a 44-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.13",
+  "base_commit_sha": "e95186c76388bf1ced21d8951af5b5624574a7bd",
+  "prompts": {},
+  "sessions": {
+    "s_baf0862db4c466": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "56cc2fd3-01ac-4cea-8edb-2e20beaa68bc",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
