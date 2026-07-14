@@ -372,8 +372,10 @@ export function CliSection({
                   : ensureOrcaCliAvailableForAgentSkillTerminal({
                       onStatusChange: handleStatusChange
                     }))
-                // Why: mark only after prereqs succeed so a failed ensure does
-                // not suppress prompts for the whole app release.
+              }}
+              onTerminalExit={() => {
+                // Why: mark after the terminal closes (user had a chance to run
+                // update), not on open — accidental open/close must not suppress.
                 markOutdatedSkillUpdateAttemptIfNeeded(
                   ORCA_CLI_SKILL_NAME,
                   isSkillOutdated(ORCA_CLI_SKILL_NAME),

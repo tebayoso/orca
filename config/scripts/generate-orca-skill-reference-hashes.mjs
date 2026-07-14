@@ -82,9 +82,18 @@ function main() {
     throw new Error('Pass exactly one of --write or --check')
   }
 
-  const next = buildSource()
+  const nextSource = buildSource()
+  /** @type {Record<string, string>} */
+  const nextHashes = Object.fromEntries(
+    MANAGED_SKILL_NAMES.map((name) => {
+      // Recompute for semantic compare (file format may differ after oxfmt).
+      const skillFilePath = join(SKILLS_ROOT, name, 'SKILL.md')
+      return [name, hashSkillMarkdown(readFileSync(skillFilePath).toString('utf8'))]
+    })
+  )
+
   if (write) {
-    writeFileSync(OUT_PATH, next, 'utf8')
+    writeFileSync(OUT_PATH, nextSource, 'utf8')
     console.log(`Wrote ${OUT_PATH} (${MANAGED_SKILL_NAMES.length} managed skills)`)
     return
   }
@@ -93,7 +102,20 @@ function main() {
     throw new Error(`Missing ${OUT_PATH}. Run: pnpm run generate:orca-skill-reference-hashes`)
   }
   const current = readFileSync(OUT_PATH, 'utf8')
-  if (current !== next) {
+  // Why: oxfmt rewrites quote style on commit; compare hash values, not bytes.
+  const match = /Object\.freeze\((\{[\s\S]*\})\s*\)/.exec(current)
+  if (!match) {
+    throw new Error(`Could not parse hashes from ${OUT_PATH}`)
+  }
+  /** @type {Record<string, string>} */
+  const currentHashes = Function(`"use strict"; return (${match[1]})`)()
+  const currentKeys = Object.keys(currentHashes).sort()
+  const nextKeys = Object.keys(nextHashes).sort()
+  if (
+    currentKeys.length !== nextKeys.length ||
+    currentKeys.some((key, index) => key !== nextKeys[index]) ||
+    nextKeys.some((key) => currentHashes[key] !== nextHashes[key])
+  ) {
     throw new Error(
       `Stale orca skill reference hashes at ${OUT_PATH}. Run: pnpm run generate:orca-skill-reference-hashes`
     )

@@ -23,7 +23,7 @@ type AgentSkillSetupPanelProps = {
   terminalAriaLabel: string
   terminalWorktreeId: string
   installed: boolean
-  /** When installed but behind the app-bundled skill reference. */
+  /** When installed but behind the release skill-hash catalog. */
   outdated?: boolean
   loading: boolean
   error: string | null
@@ -41,6 +41,12 @@ type AgentSkillSetupPanelProps = {
   getPrerequisiteStatus?: () => Promise<SkillPrerequisiteStatus>
   isPrerequisiteAvailable?: (status: SkillPrerequisiteStatus) => boolean
   onBeforeOpenTerminal?: () => void | Promise<void>
+  /**
+   * Fired when the setup terminal closes. Use for post-attempt bookkeeping
+   * (e.g. outdated-skill suppression) after the user had a chance to run the
+   * command — not for prereqs (those stay on onBeforeOpenTerminal).
+   */
+  onTerminalExit?: () => void
   showInstallWhenInstalled?: boolean
   showRecheckWhenInstalled?: boolean
   installLabel?: string
@@ -75,6 +81,7 @@ export function AgentSkillSetupPanel({
   getPrerequisiteStatus,
   isPrerequisiteAvailable = isOrcaCliAvailableOnPath,
   onBeforeOpenTerminal,
+  onTerminalExit,
   showInstallWhenInstalled = true,
   showRecheckWhenInstalled = true,
   installLabel = 'Install',
@@ -362,7 +369,10 @@ export function AgentSkillSetupPanel({
             terminalTopMarginPx={8}
             descriptionPaddingClassName="px-4 py-2"
             autoScrollIntoView={false}
-            onTerminalExit={notifyInstalledAgentSkillsChanged}
+            onTerminalExit={() => {
+              notifyInstalledAgentSkillsChanged()
+              onTerminalExit?.()
+            }}
           />
         </div>
       ) : null}

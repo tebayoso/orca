@@ -80,6 +80,8 @@ export function OrchestrationSetupCard(props: {
         await (activeSkillRuntime.agentRuntime?.runtime === 'wsl'
           ? ensureWslCliAvailableForAgentSkillTerminal(activeSkillRuntime.agentRuntime)
           : ensureOrcaCliAvailableForAgentSkillTerminal())
+      }}
+      onTerminalExit={() => {
         markOutdatedSkillUpdateAttemptIfNeeded(
           ORCHESTRATION_SKILL_NAME,
           isSkillOutdated(ORCHESTRATION_SKILL_NAME),

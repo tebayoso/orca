@@ -23,8 +23,11 @@ export function OutdatedSkillUpdateDialog(props: {
   const { skill, onDismiss, onUpdate } = props
   const headingId = useId()
   const updateStatus = useAppStore((s) => s.updateStatus)
-  // Why: UpdateCard owns bottom-10; raise this card so both remain readable.
+  // Why: UpdateCard and StarNagCard share the bottom-right slot (bottom-10, or
+  // bottom-[220px] when UpdateCard is up). Skill prompts stack above both so
+  // they never pixel-collide with equal z-index siblings.
   const updateCardVisible = updateStatus.state !== 'idle' && updateStatus.state !== 'not-available'
+  const bottomClass = updateCardVisible ? 'bottom-[430px]' : 'bottom-[220px]'
 
   const copyCommand = async (): Promise<void> => {
     try {
@@ -49,9 +52,7 @@ export function OutdatedSkillUpdateDialog(props: {
 
   return (
     <div
-      className={`fixed right-4 z-40 w-[360px] max-w-[calc(100vw-32px)] max-[480px]:left-4 max-[480px]:right-4 max-[480px]:w-auto ${
-        updateCardVisible ? 'bottom-[220px]' : 'bottom-10'
-      }`}
+      className={`fixed right-4 z-40 w-[360px] max-w-[calc(100vw-32px)] max-[480px]:left-4 max-[480px]:right-4 max-[480px]:w-auto ${bottomClass}`}
     >
       <Card className="gap-0 py-0" role="region" aria-labelledby={headingId}>
         <div className="flex flex-col gap-2.5 p-3.5">

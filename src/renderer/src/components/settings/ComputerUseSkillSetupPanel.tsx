@@ -83,6 +83,8 @@ export function ComputerUseSkillSetupPanel(): React.JSX.Element {
         await (activeSkillRuntime.agentRuntime?.runtime === 'wsl'
           ? ensureWslCliAvailableForAgentSkillTerminal(activeSkillRuntime.agentRuntime)
           : ensureOrcaCliAvailableForAgentSkillTerminal())
+      }}
+      onTerminalExit={() => {
         markOutdatedSkillUpdateAttemptIfNeeded(
           COMPUTER_USE_SKILL_NAME,
           isSkillOutdated(COMPUTER_USE_SKILL_NAME),
