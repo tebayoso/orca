@@ -1,0 +1,25 @@
+src/main/skills/bundled-skills-root.test.ts
+  s_baf0862db4c466::t_2b042cf32e3f90 1,19
+src/main/skills/freshness.test.ts
+  s_baf0862db4c466::t_6edd1c3addc204 1,14
+src/main/skills/freshness.ts
+  s_baf0862db4c466::t_84e87809f77bfe 2-3,35-54,72
+src/renderer/src/components/skills/OutdatedSkillUpdateHost.tsx
+  s_baf0862db4c466::t_6993598bd7ae2a 42-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.13",
+  "base_commit_sha": "f62931d6c933b5e8b7ecc181e2dc4ae9d4b4ccfa",
+  "prompts": {},
+  "sessions": {
+    "s_baf0862db4c466": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "56cc2fd3-01ac-4cea-8edb-2e20beaa68bc",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Jorge de los Santos <tebayoso@gmail.com>"
+    }
+  }
+}
